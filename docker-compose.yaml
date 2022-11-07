@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  svc_item:
+    build:
+      context: services/item
+  svc_order:
+    build:
+      context: services/order
+  svc_user:
+    build:
+      context: services/user
+
