@@ -3,16 +3,27 @@ buildDir:=$(projectDir)/build
 servicesDir:=$(projectDir)/services
 
 tidy-packages:
-	cd $(servicesDir)/item && go mod tidy && \
-	cd $(servicesDir)/order && go mod tidy && \
-	cd $(servicesDir)/user && go mod tidy
+	cd $(servicesDir) && go mod tidy
 
-build-packages:
-	cd $(servicesDir)/item && go build -o $(buildDir)/item . && chmod +x $(buildDir)/item && \
-	cd $(servicesDir)/order && go build -o $(buildDir)/order . && chmod +x $(buildDir)/item && \
-	cd $(servicesDir)/user && go build -o $(buildDir)/user . && chmod +x $(buildDir)/item
+build-app:
+	cd $(servicesDir) && go build -o $(buildDir)/service . && chmod +x $(buildDir)/service
 
-run-services: build-packages
-	cd $(buildDir) && ./item;
-	cd $(buildDir) && ./order;
-	cd $(buildDir) && ./user;
+run-app:
+	cd $(buildDir) && ./service;
+
+build-and-run: build-app run-app
+
+build-and-run-docker:
+	docker-compose up --build
+
+start-all-docker:
+	docker-compose up
+
+stop-all-docker:
+	docker-compose stop
+
+start-service-docker: build-app
+	docker-compose up --build $(SVC)
+
+start-service: build-app
+	ECOM_SERVICE=$(SVC) ./build/service
