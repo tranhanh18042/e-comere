@@ -22,12 +22,23 @@ services:
         SERVICE: svc_user
     ports:
       - "8082:8080"
-  databases:
-    build:
-      context: ./infra/mysql
+  db_ecom_item:
+    image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=root
     ports:
       - "3307:3306"
+  db_ecom_user:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3308:3306"
+  db_ecom_order:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3309:3306"
 
-      
+
