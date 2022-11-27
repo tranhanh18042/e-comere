@@ -2,6 +2,14 @@ projectDir:=$(shell pwd)
 buildDir:=$(projectDir)/build
 servicesDir:=$(projectDir)/services
 
+# change docker compose command based on the OS
+os:=$(shell uname -a | egrep Darwin)
+ifeq ($(shell uname -a | egrep Darwin),) # MacOS
+	dkpcmnd:="docker compose"
+else # Linux
+	dkpcmnd:="docker-compose"
+endif
+
 tidy-packages:
 	cd $(servicesDir) && go mod tidy
 
@@ -14,16 +22,17 @@ run-app:
 build-and-run: build-app run-app
 
 build-and-run-docker:
-	docker-compose up --build
+	$(dkpcmnd) up --build
 
 start-all-docker:
-	docker-compose up
+	echo "$(os)"
+	$(dkpcmnd) up
 
 stop-all-docker:
-	docker-compose stop
+	$(dkpcmnd) stop
 
 start-service-docker: build-app
-	docker-compose up --build $(SVC)
+	$(dkpcmnd) up --build $(SVC)
 
 start-service: build-app
 	ECOM_SERVICE=$(SVC) ./build/service
