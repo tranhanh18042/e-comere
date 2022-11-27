@@ -7,7 +7,7 @@ services:
       args:
         SERVICE: svc_item
     ports:
-      - "8080:8080"
+      - "8083:8080"
   svc_order:
     build:
       context: services
@@ -22,3 +22,12 @@ services:
         SERVICE: svc_user
     ports:
       - "8082:8080"
+  databases:
+    build:
+      context: ./infra/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3307:3306"
+
+      
