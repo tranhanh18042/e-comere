@@ -11,7 +11,7 @@ type HealthResponse struct {
 }
 
 func NewHealthHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context)  {
+	return func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, HealthResponse{Status: http.StatusOK})
 	}
 }

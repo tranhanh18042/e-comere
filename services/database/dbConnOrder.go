@@ -1,13 +1,12 @@
 package database
 
 import (
-	"database/sql"
-
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/jmoiron/sqlx"
 )
 
-func DBOrderConn() (dbOrder *sql.DB) {
-	dbOrder, errOrder := sql.Open("mysql", "root:root@tcp(db_ecom_order:3308)/ecom_order?collation=utf8mb4_unicode_ci&parseTime=true")
+func DBOrderConn() (dbOrder *sqlx.DB) {
+	dbOrder, errOrder := sqlx.Connect("mysql", "root:root@tcp(db_ecom_order:3308)/ecom_order?collation=utf8mb4_unicode_ci&parseTime=true")
 	if errOrder != nil {
 		panic(errOrder)
 	}
