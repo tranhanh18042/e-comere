@@ -16,7 +16,11 @@ func toGinHandler(h http.Handler) gin.HandlerFunc {
 
 func InitRoute() *gin.Engine {
 	r := gin.Default()
-	r.GET("/api/health", api.NewHealthHandler())
+	// r.GET("/api/health", api.NewHealthHandler())
+	r.POST("/api/warehouse", api.CreatWarehouse())
+	r.GET("api/warehouse/:id", api.GetWarehouseById())
+	r.GET("/api/warehouse", api.GetWarehouseAll())
+	r.PUT("api/warehouse/:id", api.UpdateWarehouse())
 	r.GET("/metrics", toGinHandler(promhttp.Handler()))
 	return r
 }
