@@ -4,51 +4,84 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tranhanh18042/e-comere/services/database"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
-type role struct {
-	id        int    `json:"id"`
-	role_name string `json:"role_name"`
+type Role struct {
+	Role_name string `json:"role_name"`
 }
-type addRole struct {
-	role_name string `json:"role_name"`
-}
-
-func CreateRole(c *gin.Context) {
-
-	db := database.DBUserConn()
-	var requestBody addRole
-
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error":   true,
-			"message": "Error creating role",
-		})
-		return
-	}
-	res, err := db.Exec("insert into role (role_name) values(?);",
-		requestBody.role_name,
-	)
-	id, _ := res.LastInsertId()
-	if err != nil {
-		c.JSON(http.StatusCreated, gin.H{
-			"id":        id,
-			"role_name": requestBody.role_name,
-		})
-	}
-	defer db.Close()
+type Roles struct {
+	Id        int    `json:"id"`
+	Role_name string `json:"role_name"`
 }
 
-func GetListRoles(g *gin.Context) {
+var db *sqlx.DB
 
-	var roles []role
-	db := database.DBUserConn()
-	err := db.Select(roles, "select * from role")
-	if err != nil {
-		g.JSON(500, gin.H{
-			"message": "error querying role",
-		})
+func CreateRole() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var role Role
+		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_user:3306)/ecom_user?collation=utf8mb4_unicode_ci&parseTime=true")
+		if err != nil {
+			panic(err)
+		}
+		if err = ctx.ShouldBindJSON(&role); err == nil {
+			_, err := db.Exec("INSERT INTO role(role_name) VALUES(?)", role.Role_name)
+			if err != nil {
+				ctx.JSON(500, gin.H{"message": "error inserting role"})
+				return
+			}
+			ctx.JSON(200, role)
+		} else {
+			ctx.JSON(500, gin.H{"error": err.Error()})
+		}
 	}
+}
+func GetRoleAll() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_user:3306)/ecom_user?collation=utf8mb4_unicode_ci&parseTime=true")
+		if err != nil {
+			panic(err)
+		}
+		rows, err := db.Query("select * from role")
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": err,
+			})
+		}
+		var roles []Roles
+		for rows.Next() {
+			var singleRoles Roles
+			if err := rows.Scan(&singleRoles.Id, &singleRoles.Role_name); err != nil {
+				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+					"messages": "error 0 ",
+				})
+			}
+			roles = append(roles, singleRoles)
+		}
+		ctx.JSON(200, roles)
+	}
+}
 
+func UpdateRole() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_user:3306)/ecom_user?collation=utf8mb4_unicode_ci&parseTime=true")
+		if err != nil {
+			panic(err)
+		}
+		var roles Role
+		if err := ctx.ShouldBindJSON(&roles); err == nil {
+			update, err := db.Prepare("UPDATE role SET role_name=? WHERE id=" + ctx.Param("id"))
+			if err != nil {
+				panic(err.Error())
+			}
+			update.Exec(roles.Role_name)
+
+			ctx.JSON(200, roles)
+		} else {
+			ctx.JSON(500, gin.H{
+				"message": "error",
+			})
+		}
+	}
 }
