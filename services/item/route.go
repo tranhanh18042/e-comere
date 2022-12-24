@@ -21,6 +21,12 @@ func InitRoute() *gin.Engine {
 	r.GET("api/warehouse/:id", api.GetWarehouseById())
 	r.GET("/api/warehouse", api.GetWarehouseAll())
 	r.PUT("api/warehouse/:id", api.UpdateWarehouse())
+
+	r.POST("/api/provider", api.CreatProvider())
+	r.GET("/api/provider/:id", api.GetProviderId())
+	r.GET("api/provider", api.GetProviderAll())
+	r.PUT("/api/provider/:id", api.UpdateProvider())
+
 	r.GET("/metrics", toGinHandler(promhttp.Handler()))
 	return r
 }

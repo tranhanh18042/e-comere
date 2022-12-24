@@ -56,10 +56,11 @@ func GetWarehouseById() gin.HandlerFunc {
 		}
 		row := dbItem.QueryRow("SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id= " + ctx.Param("id"))
 		var warehouseId WarehouseId
-		if err := row.Scan(&warehouseId.Id, &warehouseId.Name_warehouse, &warehouseId.Address, &warehouseId.Phone_Number); err != nil {
+		if err := row.Scan(&warehouseId.Id, &warehouseId.Name_warehouse, &warehouseId.Address, &warehouseId.Phone_Number); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"messages": "error ",
 			})
+			return
 		}
 		ctx.JSON(200, warehouseId)
 
@@ -82,10 +83,11 @@ func GetWarehouseAll() gin.HandlerFunc {
 
 		for rows.Next() {
 			var singleWarehouse WarehouseId
-			if err := rows.Scan(&singleWarehouse.Id, &singleWarehouse.Name_warehouse, &singleWarehouse.Address, &singleWarehouse.Phone_Number); err != nil {
+			if err := rows.Scan(&singleWarehouse.Id, &singleWarehouse.Name_warehouse, &singleWarehouse.Address, &singleWarehouse.Phone_Number); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-					"messages": "error 0 ",
+					"messages": "error",
 				})
+				return
 			}
 			warehouseId = append(warehouseId, singleWarehouse)
 		}
