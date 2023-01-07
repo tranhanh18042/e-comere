@@ -11,6 +11,10 @@ func InitRoute() *gin.Engine {
 	r.POST("/api/role", api.CreateRole())
 	r.GET("/api/role", api.GetRoleAll())
 	r.PUT("/api/role/:id", api.UpdateRole())
+
 	r.POST("api/user/:role_id", api.CreateUser())
+	r.GET("api/user/:id", api.GetUser())
+	r.GET("api/user", api.GetAllUser())
+	r.PUT("api/user/:id", api.UpdateUser())
 	return r
 }
