@@ -22,18 +22,18 @@ type WarehouseId struct {
 	Phone_Number   string `json:"phone_number"`
 }
 
-var dbItem *sql.DB
+var dbWarehouse *sql.DB
 
 func CreatWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, errItem := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if errItem != nil {
-			panic(errItem)
+		dbWarehouse, errWarehouse := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
+		if errWarehouse != nil {
+			panic(errWarehouse)
 		}
 		var warehouse Warehouse
 
 		if err := ctx.ShouldBindJSON(&warehouse); err == nil {
-			_, err := dbItem.Exec("INSERT INTO warehouse(name_warehouse, address, phone_number) VALUES(?,?,?)", warehouse.Name_warehouse, warehouse.Address, warehouse.Phone_Number)
+			_, err := dbWarehouse.Exec("INSERT INTO warehouse(name_warehouse, address, phone_number) VALUES(?,?,?)", warehouse.Name_warehouse, warehouse.Address, warehouse.Phone_Number)
 			if err != nil {
 				ctx.JSON(500, gin.H{
 					"messages": err,
@@ -50,13 +50,13 @@ func CreatWarehouse() gin.HandlerFunc {
 
 func GetWarehouseById() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
+		dbWarehouse, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
 		if err != nil {
 			panic(err)
 		}
-		row := dbItem.QueryRow("SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id= " + ctx.Param("id"))
+		row := dbWarehouse.QueryRow("SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id= " + ctx.Param("id"))
 		var warehouseId WarehouseId
-		if err := row.Scan(&warehouseId.Id, &warehouseId.Name_warehouse, &warehouseId.Address, &warehouseId.Phone_Number); err == nil {
+		if err := row.Scan(&warehouseId.Id, &warehouseId.Name_warehouse, &warehouseId.Address, warehouseId.Phone_Number); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"messages": "error ",
 			})
@@ -69,11 +69,11 @@ func GetWarehouseById() gin.HandlerFunc {
 
 func GetWarehouseAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
+		dbWarehouse, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
 		if err != nil {
 			panic(err)
 		}
-		rows, err := dbItem.Query("SELECT * FROM warehouse")
+		rows, err := dbWarehouse.Query("SELECT * FROM warehouse")
 		if err != nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "error",
@@ -83,7 +83,7 @@ func GetWarehouseAll() gin.HandlerFunc {
 
 		for rows.Next() {
 			var singleWarehouse WarehouseId
-			if err := rows.Scan(&singleWarehouse.Id, &singleWarehouse.Name_warehouse, &singleWarehouse.Address, &singleWarehouse.Phone_Number); err == nil {
+			if err := rows.Scan(&singleWarehouse.Id, &singleWarehouse.Name_warehouse, &singleWarehouse.Phone_Number, singleWarehouse.Address); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"messages": "error",
 				})
@@ -97,13 +97,13 @@ func GetWarehouseAll() gin.HandlerFunc {
 
 func UpdateWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
+		dbWarehouse, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
 		if err != nil {
 			panic(err)
 		}
 		var warehouse Warehouse
 		if err := ctx.ShouldBindJSON(&warehouse); err == nil {
-			update, err := dbItem.Prepare("UPDATE warehouse SET name_warehouse=?, address=?, phone_number=? WHERE id=" + ctx.Param("id"))
+			update, err := dbWarehouse.Prepare("UPDATE warehouse SET name_warehouse=?, address=?, phone_number=? WHERE id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err.Error())
 			}

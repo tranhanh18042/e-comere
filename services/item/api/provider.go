@@ -53,7 +53,7 @@ func GetProviderId() gin.HandlerFunc {
 		}
 		var providerId ProviderID
 		row := db.QueryRow("select * from provider where id = " + ctx.Param(("id")))
-		if err := row.Scan(&providerId.Id, &providerId.Name_provider, providerId.Phone_number, providerId.Address); err == nil {
+		if err := row.Scan(&providerId.Id, &providerId.Name_provider, &providerId.Phone_number, providerId.Address); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
