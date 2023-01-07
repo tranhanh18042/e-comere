@@ -8,7 +8,9 @@ import (
 func InitRoute() *gin.Engine {
 	r := gin.Default()
 	r.GET("/api/health", api.NewHealthHandler())
-	r.GET("/api/user/info", api.NewUserInfoHandler())
-	r.POST("api/role/add", api.CreateRole)
+	r.POST("/api/role", api.CreateRole())
+	r.GET("/api/role", api.GetRoleAll())
+	r.PUT("/api/role/:id", api.UpdateRole())
+	r.POST("api/user/:role_id", api.CreateUser())
 	return r
 }
