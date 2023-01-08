@@ -5,7 +5,7 @@ servicesDir:=$(projectDir)/services
 # change docker compose command based on the OS
 os:=$(shell uname -a | egrep Darwin)
 ifeq ($(shell uname -a | egrep Darwin),) # MacOS
-	dkpcmnd:="docker compose"
+	dkpcmnd:=docker compose
 else # Linux
 	dkpcmnd:="docker-compose"
 endif
