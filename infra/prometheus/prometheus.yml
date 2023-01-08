@@ -30,3 +30,12 @@ scrape_configs:
   - job_name: "svc_item"
     static_configs:
       - targets: ["svc_item:8080"]
+  - job_name: "svc_order"
+    static_configs:
+      - targets: ["svc_order:8080"]
+  - job_name: "svc_user"
+    static_configs:
+      - targets: ["svc_user:8080"]
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["grafana:3000"]
