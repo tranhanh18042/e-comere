@@ -47,9 +47,9 @@ func CreateUser() gin.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
-		var user userDTO
+		var user user
 		if err := ctx.ShouldBindJSON(&user); err == nil {
-			_, err = dbUser.Exec("insert into user(role_id,status,username,password,name,address,phone_number) values("+ctx.Param("role_id")+",?,?,?,?,?,?)", user.Status, user.Username, user.Password, user.Name, user.Address, user.Phone_number)
+			_, err = dbUser.Exec("insert into user(role_id,status,username,password,name,address,phone_number) values(?,?,?,?,?,?,?)", ctx.Param("role_id"), user.Status, user.Username, user.Password, user.Name, user.Address, user.Phone_number)
 			if err != nil {
 				ctx.JSON(500, gin.H{
 					"message": err,
@@ -70,13 +70,13 @@ func GetAllUser() gin.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
-		rows, err := dbUser.Query("select * from user")
+		rows, err := dbUser.Query("select user.id, user.role_id, user.status, user.name, user.address, user.phone_number from user")
 		if err != nil {
 			panic(err)
 		}
-		var users []user
+		var users []info_user
 		for rows.Next() {
-			var user user
+			var user info_user
 			if err := rows.Scan(&user.Id, &user.Role_id, &user.Status, &user.Name, &user.Address, user.Phone_number); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
@@ -94,8 +94,8 @@ func GetUser() gin.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
-		var user user
-		row := dbUser.QueryRow("select * from user where id = " + ctx.Param(("id")))
+		var user info_user
+		row := dbUser.QueryRow("select user.id, user.role_id, user.status, user.name, user.address, user.phone_number from user where id = " + ctx.Param(("id")))
 		if err := row.Scan(&user.Id, &user.Role_id, &user.Status, &user.Name, &user.Address, user.Phone_number); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
@@ -113,7 +113,7 @@ func UpdateUser() gin.HandlerFunc {
 		}
 		var user user
 		if err := ctx.ShouldBindJSON(&user); err == nil {
-			update, err := dbUser.Preparex("update user set role_id=?,status=?,name=?,addres=?,phone_number=? where id=" + ctx.Param("id"))
+			update, err := dbUser.Preparex("update user set role_id=?,status=?,name=?,address=?,phone_number=? where id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err)
 			}
