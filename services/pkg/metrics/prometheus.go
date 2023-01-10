@@ -177,30 +177,30 @@ func initMetricCollectors(metricPrefix string) {
 				Name:      "api_request_duration_ms",
 				Help:      "The HTTP request latencies in milliseconds.",
 				Buckets:   []float64{20, 40, 80, 120, 150, 200, 250, 300, 500, 750, 1000, 1500, 2000}, // in milliseconds
-			}, []string{"method", "path", "env"}),
+			}, []string{"svc", "method", "path", "env"}),
 		}
 		HTTPClient = &httpMetrics{
 			ReconnectCnt: promauto.NewCounterVec(prometheus.CounterOpts{
 				Subsystem: metricPrefix,
 				Name:      "http_client_reconnect_count",
 				Help:      "How many re-dial during establishing tcp connection when request to external services",
-			}, []string{"env", "network", "address"}),
+			}, []string{"svc", "env", "network", "address"}),
 			ErrCnt: promauto.NewCounterVec(prometheus.CounterOpts{
 				Subsystem: metricPrefix,
 				Name:      "http_client_err_count",
 				Help:      "How many errors occurred by error type when request to external services",
-			}, []string{"env", "type", "service", "path"}),
+			}, []string{"svc", "env", "type", "target_svc", "path"}),
 			ResponseCode: promauto.NewCounterVec(prometheus.CounterOpts{
 				Subsystem: metricPrefix,
 				Name:      "http_client_response_code_count",
 				Help:      "How many response by HTTP code per endpoint when request to external services",
-			}, []string{"env", "service", "path", "code"}),
+			}, []string{"svc", "env", "target_svc", "path", "code"}),
 			ResponseDur: promauto.NewHistogramVec(prometheus.HistogramOpts{
 				Subsystem: metricPrefix,
 				Name:      "http_client_response_dur_ms",
 				Help:      "Request duration in ms when request to external services",
 				Buckets:   []float64{20, 40, 80, 120, 150, 200, 250, 300, 500, 750, 1000, 1500, 2000, 3000, 5000, 10000}, // in milliseconds
-			}, []string{"env", "service", "path"}),
+			}, []string{"svc", "env", "target_svc", "path"}),
 		}
 	})
 }
