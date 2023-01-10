@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -37,11 +39,30 @@ func CreatProvider() gin.HandlerFunc {
 				ctx.JSON(500, gin.H{
 					"message": err,
 				})
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": ctx.Request.Method,
+					"env":  "local",
+				}).Inc()
 				return
 			}
 			ctx.JSON(200, provider)
+			metrics.API.ReqCnt.With(prometheus.Labels{
+				"svc":    "item",
+				"method": ctx.Request.Method,
+				"path":   ctx.FullPath(),
+				"env":    "local",
+				"status": "200",
+			}).Inc()
 		} else {
 			ctx.JSON(500, gin.H{"error": err.Error()})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": ctx.Request.Method,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }
@@ -57,9 +78,22 @@ func GetProviderId() gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": ctx.Request.Method,
+				"env":  "local",
+			}).Inc()
 			return
 		}
 		ctx.JSON(200, providerId)
+		metrics.API.ReqCnt.With(prometheus.Labels{
+			"svc":    "item",
+			"method": ctx.Request.Method,
+			"path":   ctx.FullPath(),
+			"env":    "local",
+			"status": "200",
+		}).Inc()
 	}
 }
 func GetProviderAll() gin.HandlerFunc {
@@ -79,10 +113,23 @@ func GetProviderAll() gin.HandlerFunc {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
 				})
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": ctx.Request.Method,
+					"env":  "local",
+				}).Inc()
 			}
 			providerId = append(providerId, singleProviderId)
 		}
 		ctx.JSON(200, providerId)
+		metrics.API.ReqCnt.With(prometheus.Labels{
+			"svc":    "item",
+			"method": ctx.Request.Method,
+			"path":   ctx.FullPath(),
+			"env":    "local",
+			"status": "200",
+		}).Inc()
 	}
 }
 func UpdateProvider() gin.HandlerFunc {
@@ -99,10 +146,23 @@ func UpdateProvider() gin.HandlerFunc {
 			}
 			update.Exec(provider.Name_provider, provider.Phone_number, provider.Address)
 			ctx.JSON(200, provider)
+			metrics.API.ReqCnt.With(prometheus.Labels{
+				"svc":    "item",
+				"method": ctx.Request.Method,
+				"path":   ctx.FullPath(),
+				"env":    "local",
+				"status": "200",
+			}).Inc()
 		} else {
 			ctx.JSON(500, gin.H{
 				"message": "error",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": ctx.Request.Method,
+				"env":  "local",
+			}).Inc()
 		}
 
 	}

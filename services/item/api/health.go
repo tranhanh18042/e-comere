@@ -14,13 +14,12 @@ type HealthResponse struct {
 
 func NewHealthHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		metrics.API.ReqCnt.With(prometheus.Labels{
-			"svc":    "item",
-			"method": ctx.Request.Method,
-			"path":   ctx.FullPath(),
-			"env":    "local",
-			"status": "200",
+		metrics.API.ErrCnt.With(prometheus.Labels{
+			"svc":  "item",
+			"path": ctx.FullPath(),
+			"type": ctx.Request.Method,
+			"env":  "local",
 		}).Inc()
-		ctx.JSON(http.StatusOK, HealthResponse{Status: http.StatusOK})
+		ctx.JSON(http.StatusBadRequest, HealthResponse{Status: http.StatusBadRequest})
 	}
 }

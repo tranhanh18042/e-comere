@@ -6,6 +6,8 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,9 +43,21 @@ func CreatWarehouse() gin.HandlerFunc {
 			}
 
 			ctx.JSON(200, warehouse)
-
+			metrics.API.ReqCnt.With(prometheus.Labels{
+				"svc":    "item",
+				"method": ctx.Request.Method,
+				"path":   ctx.FullPath(),
+				"env":    "local",
+				"status": "200",
+			}).Inc()
 		} else {
 			ctx.JSON(500, gin.H{"error": err.Error()})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": ctx.Request.Method,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }
@@ -60,10 +74,22 @@ func GetWarehouseById() gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"messages": "error ",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": ctx.Request.Method,
+				"env":  "local",
+			}).Inc()
 			return
 		}
 		ctx.JSON(200, warehouseId)
-
+		metrics.API.ReqCnt.With(prometheus.Labels{
+			"svc":    "item",
+			"method": ctx.Request.Method,
+			"path":   ctx.FullPath(),
+			"env":    "local",
+			"status": "200",
+		}).Inc()
 	}
 }
 
@@ -87,11 +113,24 @@ func GetWarehouseAll() gin.HandlerFunc {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"messages": "error",
 				})
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": ctx.Request.Method,
+					"env":  "local",
+				}).Inc()
 				return
 			}
 			warehouseId = append(warehouseId, singleWarehouse)
 		}
 		ctx.JSON(200, warehouseId)
+		metrics.API.ReqCnt.With(prometheus.Labels{
+			"svc":    "item",
+			"method": ctx.Request.Method,
+			"path":   ctx.FullPath(),
+			"env":    "local",
+			"status": "200",
+		}).Inc()
 	}
 }
 
@@ -110,10 +149,23 @@ func UpdateWarehouse() gin.HandlerFunc {
 			update.Exec(warehouse.Name_warehouse, warehouse.Address, warehouse.Phone_Number)
 
 			ctx.JSON(200, warehouse)
+			metrics.API.ReqCnt.With(prometheus.Labels{
+				"svc":    "item",
+				"method": ctx.Request.Method,
+				"path":   ctx.FullPath(),
+				"env":    "local",
+				"status": "200",
+			}).Inc()
 		} else {
 			ctx.JSON(500, gin.H{
 				"message": "error",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": ctx.Request.Method,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }
