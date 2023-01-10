@@ -6,6 +6,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/helper"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,9 +44,14 @@ func CreatWarehouse() gin.HandlerFunc {
 			}
 
 			ctx.JSON(200, warehouse)
-
 		} else {
 			ctx.JSON(500, gin.H{"error": err.Error()})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }
@@ -60,10 +68,15 @@ func GetWarehouseById() gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"messages": "error ",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricQueryError,
+				"env":  "local",
+			}).Inc()
 			return
 		}
 		ctx.JSON(200, warehouseId)
-
 	}
 }
 
@@ -87,6 +100,12 @@ func GetWarehouseAll() gin.HandlerFunc {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"messages": "error",
 				})
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": helper.MetricQueryError,
+					"env":  "local",
+				}).Inc()
 				return
 			}
 			warehouseId = append(warehouseId, singleWarehouse)
@@ -114,6 +133,12 @@ func UpdateWarehouse() gin.HandlerFunc {
 			ctx.JSON(500, gin.H{
 				"message": "error",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }

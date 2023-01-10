@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/helper"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -34,6 +37,12 @@ func CreatProvider() gin.HandlerFunc {
 		if err := ctx.ShouldBindJSON(&provider); err == nil {
 			_, err := db.Exec("INSERT INTO provider(name_provider,phone_number,address) VALUES(?,?,?)", provider.Name_provider, provider.Phone_number, provider.Address)
 			if err != nil {
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": helper.MetricInvalidParams,
+					"env":  "local",
+				}).Inc()
 				ctx.JSON(500, gin.H{
 					"message": err,
 				})
@@ -42,6 +51,12 @@ func CreatProvider() gin.HandlerFunc {
 			ctx.JSON(200, provider)
 		} else {
 			ctx.JSON(500, gin.H{"error": err.Error()})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }
@@ -57,6 +72,12 @@ func GetProviderId() gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricQueryError,
+				"env":  "local",
+			}).Inc()
 			return
 		}
 		ctx.JSON(200, providerId)
@@ -79,6 +100,12 @@ func GetProviderAll() gin.HandlerFunc {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
 				})
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": helper.MetricQueryError,
+					"env":  "local",
+				}).Inc()
 			}
 			providerId = append(providerId, singleProviderId)
 		}
@@ -103,6 +130,12 @@ func UpdateProvider() gin.HandlerFunc {
 			ctx.JSON(500, gin.H{
 				"message": "error",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 		}
 
 	}

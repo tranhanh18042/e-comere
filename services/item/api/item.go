@@ -5,6 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/helper"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 )
 
 type ItemDTI struct {
@@ -69,10 +72,17 @@ func AddItem() gin.HandlerFunc {
 				"messages": "OK",
 			})
 		} else {
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 			ctx.JSON(500, gin.H{
 				"messages": err.Error(),
 			})
 		}
+
 	}
 }
 func GetAllItem() gin.HandlerFunc {
@@ -92,6 +102,12 @@ func GetAllItem() gin.HandlerFunc {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
 				})
+				metrics.API.ErrCnt.With(prometheus.Labels{
+					"svc":  "item",
+					"path": ctx.FullPath(),
+					"type": helper.MetricInvalidParams,
+					"env":  "local",
+				}).Inc()
 				return
 			}
 			items = append(items, item)
@@ -111,6 +127,12 @@ func GetItem() gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 			return
 		}
 		ctx.JSON(200, item)
@@ -128,12 +150,26 @@ func UpdateItem() gin.HandlerFunc {
 			if err != nil {
 				panic(err)
 			}
-			update.Exec(item.WarehouseId, item.ProviderId, item.Status, item.Name_item, item.Price, item.Description)
+			_, err = update.Exec(item.WarehouseId, item.ProviderId, item.Status, item.Name_item, item.Price, item.Description)
+			if err != nil {
+				metrics.DB.ErrCnt.With(prometheus.Labels{
+					"env":    "local",
+					"type":   "",
+					"db":     "ecom_item",
+					"target": "error",
+				})
+			}
 			ctx.JSON(200, item)
 		} else {
 			ctx.JSON(500, gin.H{
 				"message": "error",
 			})
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
 		}
 	}
 }
