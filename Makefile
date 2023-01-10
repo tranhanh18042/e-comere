@@ -22,7 +22,7 @@ run-app:
 build-and-run: build-app run-app
 
 build-and-run-docker:
-	$(dkpcmnd) up --build
+	$(dkpcmnd) up --build --remove-orphans
 
 start-all-docker:
 	echo "$(os)"

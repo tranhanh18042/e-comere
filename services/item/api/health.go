@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/helper"
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 )
 
@@ -14,12 +15,17 @@ type HealthResponse struct {
 
 func NewHealthHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		metrics.API.ErrCnt.With(prometheus.Labels{
-			"svc":  "item",
-			"path": ctx.FullPath(),
-			"type": ctx.Request.Method,
-			"env":  "local",
-		}).Inc()
-		ctx.JSON(http.StatusBadRequest, HealthResponse{Status: http.StatusBadRequest})
+		// ?err=true to get error response
+		if ctx.Query("err") != "" {
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricNoHealth,
+				"env":  "local",
+			}).Inc()
+			ctx.JSON(http.StatusBadRequest, HealthResponse{Status: http.StatusBadRequest})
+		} else {
+			ctx.JSON(http.StatusOK, HealthResponse{Status: http.StatusOK})
+		}
 	}
 }

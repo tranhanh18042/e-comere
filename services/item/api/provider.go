@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/helper"
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
@@ -36,31 +37,24 @@ func CreatProvider() gin.HandlerFunc {
 		if err := ctx.ShouldBindJSON(&provider); err == nil {
 			_, err := db.Exec("INSERT INTO provider(name_provider,phone_number,address) VALUES(?,?,?)", provider.Name_provider, provider.Phone_number, provider.Address)
 			if err != nil {
-				ctx.JSON(500, gin.H{
-					"message": err,
-				})
 				metrics.API.ErrCnt.With(prometheus.Labels{
 					"svc":  "item",
 					"path": ctx.FullPath(),
-					"type": ctx.Request.Method,
+					"type": helper.MetricInvalidParams,
 					"env":  "local",
 				}).Inc()
+				ctx.JSON(500, gin.H{
+					"message": err,
+				})
 				return
 			}
 			ctx.JSON(200, provider)
-			metrics.API.ReqCnt.With(prometheus.Labels{
-				"svc":    "item",
-				"method": ctx.Request.Method,
-				"path":   ctx.FullPath(),
-				"env":    "local",
-				"status": "200",
-			}).Inc()
 		} else {
 			ctx.JSON(500, gin.H{"error": err.Error()})
 			metrics.API.ErrCnt.With(prometheus.Labels{
 				"svc":  "item",
 				"path": ctx.FullPath(),
-				"type": ctx.Request.Method,
+				"type": helper.MetricInvalidParams,
 				"env":  "local",
 			}).Inc()
 		}
@@ -81,19 +75,12 @@ func GetProviderId() gin.HandlerFunc {
 			metrics.API.ErrCnt.With(prometheus.Labels{
 				"svc":  "item",
 				"path": ctx.FullPath(),
-				"type": ctx.Request.Method,
+				"type": helper.MetricQueryError,
 				"env":  "local",
 			}).Inc()
 			return
 		}
 		ctx.JSON(200, providerId)
-		metrics.API.ReqCnt.With(prometheus.Labels{
-			"svc":    "item",
-			"method": ctx.Request.Method,
-			"path":   ctx.FullPath(),
-			"env":    "local",
-			"status": "200",
-		}).Inc()
 	}
 }
 func GetProviderAll() gin.HandlerFunc {
@@ -116,20 +103,13 @@ func GetProviderAll() gin.HandlerFunc {
 				metrics.API.ErrCnt.With(prometheus.Labels{
 					"svc":  "item",
 					"path": ctx.FullPath(),
-					"type": ctx.Request.Method,
+					"type": helper.MetricQueryError,
 					"env":  "local",
 				}).Inc()
 			}
 			providerId = append(providerId, singleProviderId)
 		}
 		ctx.JSON(200, providerId)
-		metrics.API.ReqCnt.With(prometheus.Labels{
-			"svc":    "item",
-			"method": ctx.Request.Method,
-			"path":   ctx.FullPath(),
-			"env":    "local",
-			"status": "200",
-		}).Inc()
 	}
 }
 func UpdateProvider() gin.HandlerFunc {
@@ -146,13 +126,6 @@ func UpdateProvider() gin.HandlerFunc {
 			}
 			update.Exec(provider.Name_provider, provider.Phone_number, provider.Address)
 			ctx.JSON(200, provider)
-			metrics.API.ReqCnt.With(prometheus.Labels{
-				"svc":    "item",
-				"method": ctx.Request.Method,
-				"path":   ctx.FullPath(),
-				"env":    "local",
-				"status": "200",
-			}).Inc()
 		} else {
 			ctx.JSON(500, gin.H{
 				"message": "error",
@@ -160,7 +133,7 @@ func UpdateProvider() gin.HandlerFunc {
 			metrics.API.ErrCnt.With(prometheus.Labels{
 				"svc":  "item",
 				"path": ctx.FullPath(),
-				"type": ctx.Request.Method,
+				"type": helper.MetricInvalidParams,
 				"env":  "local",
 			}).Inc()
 		}

@@ -1,21 +1,16 @@
 package item
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/tranhanh18042/e-comere/services/helper"
 	"github.com/tranhanh18042/e-comere/services/item/api"
+	"github.com/tranhanh18042/e-comere/services/middlewares"
 )
-
-func toGinHandler(h http.Handler) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
-}
 
 func InitRoute() *gin.Engine {
 	r := gin.Default()
+	r.Use(middlewares.NewMetricsMiddleware(helper.MetricSvcNameItem))
 	r.GET("/api/health", api.NewHealthHandler())
 
 	r.POST("/api/warehouse", api.CreatWarehouse())
@@ -33,6 +28,6 @@ func InitRoute() *gin.Engine {
 	r.GET("api/item/:id", api.GetItem())
 	r.PUT("api/item/:id", api.UpdateItem())
 
-	r.GET("/metrics", toGinHandler(promhttp.Handler()))
+	r.GET("/metrics", helper.ToGinHandler(promhttp.Handler()))
 	return r
 }
