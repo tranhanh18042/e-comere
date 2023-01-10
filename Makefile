@@ -31,6 +31,9 @@ start-all-docker:
 stop-all-docker:
 	$(dkpcmnd) stop
 
+clean-all-docker:
+	$(dkpcmnd) down -v
+
 start-service-docker: build-app
 	$(dkpcmnd) up --build $(SVC)
 
