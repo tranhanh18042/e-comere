@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/tranhanh18042/e-comere/services/customer"
+	customerDB "github.com/tranhanh18042/e-comere/services/customer/db"
 	"github.com/tranhanh18042/e-comere/services/item"
 	itemDB "github.com/tranhanh18042/e-comere/services/item/db"
 	"github.com/tranhanh18042/e-comere/services/order"
@@ -35,7 +36,7 @@ func main() {
 		router = item.InitRoute(db)
 	case "svc_customer":
 		customerDBConn := "root:root@tcp(db_ecom_customer:3306)/service_customer?collation=utf8mb4_unicode_ci&parseTime=true"
-		db, errDBConn = itemDB.NewItemDB(customerDBConn)
+		db, errDBConn = customerDB.NewCustomerDB(customerDBConn)
 		if errDBConn != nil {
 			panic(fmt.Errorf("cannot connect to db: %s, err: %v", customerDBConn, errDBConn))
 		}
