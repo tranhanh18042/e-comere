@@ -1,5 +1,9 @@
-CREATE TABLE `customer`(
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE DATABASE IF NOT EXISTS `service_customer`;
+
+USE `service_customer`;
+
+CREATE TABLE IF NOT EXISTS `customer` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `status` INT NOT NULL,
     `username` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
@@ -8,6 +12,4 @@ CREATE TABLE `customer`(
     `address` VARCHAR(255) NOT NULL,
     `phone_number` VARCHAR(255) NOT NULL,
     `email` VARCHAR(255) NOT NULL
-);
-ALTER TABLE
-    `customer` ADD PRIMARY KEY `customer_id_primary`(`id`);
+) ENGINE=INNODB;
