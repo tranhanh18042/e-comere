@@ -13,7 +13,10 @@ endif
 tidy-packages:
 	cd $(servicesDir) && go mod tidy
 
-build-app:
+remove-old-build:
+	rm -rf $(buildDir)/*
+
+build-app: remove-old-build
 	cd $(servicesDir) && go build -o $(buildDir)/service . && chmod +x $(buildDir)/service
 
 run-app:

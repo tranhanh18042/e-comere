@@ -23,7 +23,6 @@ type apiMetrics struct {
 }
 
 type dbMetrics struct {
-	ReconnectCnt *prometheus.CounterVec
 	ErrCnt       *prometheus.CounterVec
 	RowsReturned *prometheus.GaugeVec
 	QueryDur     *prometheus.HistogramVec
@@ -96,11 +95,6 @@ func initMetricCollectors(metricPrefix string) {
 				Subsystem: metricPrefix,
 				Name:      "db_error_count",
 				Help:      "How many errors occurred by error type",
-			}, []string{"env", "type", "db", "target"}),
-			ReconnectCnt: promauto.NewCounterVec(prometheus.CounterOpts{
-				Subsystem: metricPrefix,
-				Name:      "db_reconnect_count",
-				Help:      "How many reconnect during query occurred",
 			}, []string{"env", "type", "db", "target"}),
 			RowsReturned: promauto.NewGaugeVec(prometheus.GaugeOpts{
 				Subsystem: metricPrefix,
