@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tranhanh18042/e-comere/services/helper"
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
@@ -52,17 +51,11 @@ type ProviderDTO struct {
 	Phone_number  string `json:"Phone_number"`
 }
 
-var dbItem *sqlx.DB
-
 func AddItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var itemDTI ItemDTI
 		if err := ctx.ShouldBindJSON(&itemDTI); err == nil {
-			_, err := dbItem.Exec("insert into item (warehouse_id,provider_id,amount,status,name_item, price, description) value(?,?,?,?,?,?,?)", ctx.Param("warehouse_id"), ctx.Param("provider_id"), itemDTI.Amount, itemDTI.Status, itemDTI.Name_item, itemDTI.Price, itemDTI.Description)
+			_, err := itemDB.Exec("insert into item (warehouse_id,provider_id,amount,status,name_item, price, description) value(?,?,?,?,?,?,?)", ctx.Param("warehouse_id"), ctx.Param("provider_id"), itemDTI.Amount, itemDTI.Status, itemDTI.Name_item, itemDTI.Price, itemDTI.Description)
 			if err != nil {
 				ctx.JSON(500, gin.H{
 					"messages": err,
@@ -87,11 +80,7 @@ func AddItem() gin.HandlerFunc {
 }
 func GetAllItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
-		rows, err := dbItem.Query("select * from item")
+		rows, err := itemDB.Query("select * from item")
 		if err != nil {
 			panic(err)
 		}
@@ -117,12 +106,8 @@ func GetAllItem() gin.HandlerFunc {
 }
 func GetItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var item Item
-		row := dbItem.QueryRow("select * from item where id = " + ctx.Param(("id")))
+		row := itemDB.QueryRow("select * from item where id = " + ctx.Param(("id")))
 		if err := row.Scan(&item.Id, &item.WarehouseId, &item.ProviderId, &item.Amount, &item.Status, &item.Name_item, &item.Price, item.Description); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
@@ -140,13 +125,9 @@ func GetItem() gin.HandlerFunc {
 }
 func UpdateItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		dbItem, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var item Item
 		if err := ctx.ShouldBindJSON(&item); err == nil {
-			update, err := dbItem.Preparex("update item set warehouse_id=?,provider_id=?,status=?,name_item=?,price=?,description=? where id=" + ctx.Param("id"))
+			update, err := itemDB.Preparex("update item set warehouse_id=?,provider_id=?,status=?,name_item=?,price=?,description=? where id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err)
 			}

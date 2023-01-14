@@ -9,7 +9,6 @@ import (
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 )
 
 type Provider struct {
@@ -25,17 +24,11 @@ type ProviderID struct {
 	Address       string `json:"address"`
 }
 
-var db *sqlx.DB
-
 func CreatProvider() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var provider Provider
 		if err := ctx.ShouldBindJSON(&provider); err == nil {
-			_, err := db.Exec("INSERT INTO provider(name_provider,phone_number,address) VALUES(?,?,?)", provider.Name_provider, provider.Phone_number, provider.Address)
+			_, err := itemDB.Exec("INSERT INTO provider(name_provider,phone_number,address) VALUES(?,?,?)", provider.Name_provider, provider.Phone_number, provider.Address)
 			if err != nil {
 				metrics.API.ErrCnt.With(prometheus.Labels{
 					"svc":  "item",
@@ -62,12 +55,8 @@ func CreatProvider() gin.HandlerFunc {
 }
 func GetProviderId() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var providerId ProviderID
-		row := db.QueryRow("select * from provider where id = " + ctx.Param(("id")))
+		row := itemDB.QueryRow("select * from provider where id = " + ctx.Param(("id")))
 		if err := row.Scan(&providerId.Id, &providerId.Name_provider, &providerId.Phone_number, providerId.Address); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
@@ -85,11 +74,7 @@ func GetProviderId() gin.HandlerFunc {
 }
 func GetProviderAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
-		rows, err := db.Query("select * from provider")
+		rows, err := itemDB.Query("select * from provider")
 		if err != nil {
 			panic(err)
 		}
@@ -114,13 +99,9 @@ func GetProviderAll() gin.HandlerFunc {
 }
 func UpdateProvider() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var provider Provider
 		if err := ctx.ShouldBindJSON(&provider); err == nil {
-			update, err := db.Preparex("update provider set name_provider=?,phone_number=?,address=? where id=" + ctx.Param("id"))
+			update, err := itemDB.Preparex("update provider set name_provider=?,phone_number=?,address=? where id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err)
 			}
