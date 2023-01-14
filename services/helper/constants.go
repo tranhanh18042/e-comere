@@ -8,6 +8,6 @@ const (
 
 const (
 	MetricSvcNameOrder = "order"
-	MetricSvcNameUser = "user"
+	MetricSvcNameCustomer = "customer"
 	MetricSvcNameItem = "item"
 )

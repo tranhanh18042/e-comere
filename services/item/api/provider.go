@@ -9,33 +9,26 @@ import (
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 )
 
 type Provider struct {
-	Name_provider string `json:"name_provider"`
-	Phone_number  string `json:"phone_number"`
-	Address       string `json:"address"`
+	ProviderName string `json:"ProviderName"`
+	PhoneNumber  string `json:"PhoneNumber"`
+	Address      string `json:"Address"`
 }
 
 type ProviderID struct {
-	Id            int    `json:"id"`
-	Name_provider string `json:"name_provider"`
-	Phone_number  string `json:"phone_number"`
-	Address       string `json:"address"`
+	Id           int    `json:"Id"`
+	ProviderName string `json:"ProviderName"`
+	PhoneNumber  string `json:"PhoneNumber"`
+	Address      string `json:"Address"`
 }
-
-var db *sqlx.DB
 
 func CreatProvider() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var provider Provider
 		if err := ctx.ShouldBindJSON(&provider); err == nil {
-			_, err := db.Exec("INSERT INTO provider(name_provider,phone_number,address) VALUES(?,?,?)", provider.Name_provider, provider.Phone_number, provider.Address)
+			_, err := itemDB.Exec("INSERT INTO provider(provider_name,phone_number,address) VALUES(?,?,?)", provider.ProviderName, provider.PhoneNumber, provider.Address)
 			if err != nil {
 				metrics.API.ErrCnt.With(prometheus.Labels{
 					"svc":  "item",
@@ -62,13 +55,9 @@ func CreatProvider() gin.HandlerFunc {
 }
 func GetProviderId() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var providerId ProviderID
-		row := db.QueryRow("select * from provider where id = " + ctx.Param(("id")))
-		if err := row.Scan(&providerId.Id, &providerId.Name_provider, &providerId.Phone_number, providerId.Address); err == nil {
+		row := itemDB.QueryRow("select * from provider where id = " + ctx.Param(("id")))
+		if err := row.Scan(&providerId.Id, &providerId.ProviderName, &providerId.PhoneNumber, providerId.Address); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
@@ -85,18 +74,14 @@ func GetProviderId() gin.HandlerFunc {
 }
 func GetProviderAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
-		rows, err := db.Query("select * from provider")
+		rows, err := itemDB.Query("select * from provider")
 		if err != nil {
 			panic(err)
 		}
 		var providerId []ProviderID
 		for rows.Next() {
 			var singleProviderId ProviderID
-			if err := rows.Scan(&singleProviderId.Id, &singleProviderId.Name_provider, &singleProviderId.Phone_number, singleProviderId.Address); err == nil {
+			if err := rows.Scan(&singleProviderId.Id, &singleProviderId.ProviderName, &singleProviderId.PhoneNumber, singleProviderId.Address); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
 				})
@@ -114,17 +99,13 @@ func GetProviderAll() gin.HandlerFunc {
 }
 func UpdateProvider() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		db, err := sqlx.Connect("mysql", "root:root@tcp(db_ecom_item:3306)/ecom_item?collation=utf8mb4_unicode_ci&parseTime=true")
-		if err != nil {
-			panic(err)
-		}
 		var provider Provider
 		if err := ctx.ShouldBindJSON(&provider); err == nil {
-			update, err := db.Preparex("update provider set name_provider=?,phone_number=?,address=? where id=" + ctx.Param("id"))
+			update, err := itemDB.Preparex("update provider set provider_name=?,phone_number=?,address=? where id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err)
 			}
-			update.Exec(provider.Name_provider, provider.Phone_number, provider.Address)
+			update.Exec(provider.ProviderName, provider.PhoneNumber, provider.Address)
 			ctx.JSON(200, provider)
 		} else {
 			ctx.JSON(500, gin.H{
