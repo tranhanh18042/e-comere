@@ -15,11 +15,11 @@ services:
         SERVICE: svc_order
     ports:
       - "8081:8080"
-  svc_user:
+  svc_customer:
     build:
       context: services
       args:
-        SERVICE: svc_user
+        SERVICE: svc_customer
     ports:
       - "8082:8080"
   db_ecom_item:
@@ -28,7 +28,7 @@ services:
       - MYSQL_ROOT_PASSWORD=root
     ports:
       - "3307:3306"
-  db_ecom_user:
+  db_ecom_customer:
     image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=root

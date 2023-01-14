@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tranhanh18042/e-comere/services/customer"
 	"github.com/tranhanh18042/e-comere/services/item"
 	"github.com/tranhanh18042/e-comere/services/order"
-	"github.com/tranhanh18042/e-comere/services/user"
 )
 
 func main() {
@@ -18,8 +18,8 @@ func main() {
 	switch service {
 	case "svc_item":
 		router = item.InitRoute()
-	case "svc_user":
-		router = user.InitRoute()
+	case "svc_customer":
+		router = customer.InitRoute()
 	case "svc_order":
 		router = order.InitRoute()
 	default:
