@@ -6,6 +6,8 @@ services:
       context: services
       args:
         SERVICE: svc_item
+    depends_on:
+      - db_ecom_item
     ports:
       - "8083:8080"
   svc_order:
@@ -13,6 +15,8 @@ services:
       context: services
       args:
         SERVICE: svc_order
+    depends_on:
+      - db_ecom_order
     ports:
       - "8081:8080"
   svc_customer:
@@ -20,6 +24,8 @@ services:
       context: services
       args:
         SERVICE: svc_customer
+    depends_on:
+      - db_ecom_customer
     ports:
       - "8082:8080"
   db_ecom_item:
