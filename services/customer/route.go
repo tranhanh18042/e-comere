@@ -15,7 +15,12 @@ func InitRoute(db *sqlx.DB) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares.NewMetricsMiddleware(helper.MetricSvcNameCustomer))
 	r.GET("/api/health", api.NewHealthHandler())
-	r.GET("/api/customer/info", api.NewCustomerInfoHandler())
+
+	r.POST("/api/customer", api.CreateCustomer())
+	r.PUT("api/customer/:id", api.UpdateCustomer())
+	r.GET("/api/customer/:id", api.GetCustomerByID())
+	r.GET("/api/customer", api.GetListCustomer())
+
 	r.GET("/metrics", helper.ToGinHandler(promhttp.Handler()))
 	return r
 }
