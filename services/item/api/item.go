@@ -10,52 +10,28 @@ import (
 )
 
 type ItemDTI struct {
-	Amount      int    `json:"Amount"`
+	Quantity    int    `json:"Quantity"`
 	Status      int    `json:"Status"`
-	Name_item   string `json:"Name_item"`
-	Price       int    `json:"Price"`
+	ItemName    string `json:"ItemName"`
+	UnitPrice   int    `json:"UnitPrice"`
 	Description string `json:"description"`
 }
 type Item struct {
 	Id          int    `json:"Id"`
-	WarehouseId int    `json:"WarehouseId"`
-	ProviderId  int    `json:"Provider`
-	Amount      int    `json:"Amount"`
+	WarehouseID int    `json:"WarehouseID"`
+	ProviderID  int    `json:"ProviderID`
+	Quantity    int    `json:"Quantity"`
 	Status      int    `json:"Status"`
-	Name_item   string `json:"Name_item"`
-	Price       int    `json:"Price"`
+	ItemName    string `json:"ItemName"`
+	UnitPrice   int    `json:"UnitPrice"`
 	Description string `json:"description"`
-}
-
-type ItemDetail struct {
-	Id int `json:"Id"`
-	WarehouseDTO
-	ProviderDTO
-	Amount      int    `json:"Amount"`
-	Status      int    `json:"Status"`
-	Name_item   string `json:"Name_item"`
-	Price       int    `json:"Price"`
-	Description string `json:"description"`
-}
-
-type WarehouseDTO struct {
-	Id             int    `json:"Id"`
-	Name_warehouse string `json:"Name_warehouse"`
-	Address        string `json:"Address"`
-	Phone_number   string `json:"Phone_number"`
-}
-type ProviderDTO struct {
-	Id            int    `json:"Id"`
-	Name_provider string `json:"Name_warehouse"`
-	Address       string `json:"Address"`
-	Phone_number  string `json:"Phone_number"`
 }
 
 func AddItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var itemDTI ItemDTI
 		if err := ctx.ShouldBindJSON(&itemDTI); err == nil {
-			_, err := itemDB.Exec("insert into item (warehouse_id,provider_id,amount,status,name_item, price, description) value(?,?,?,?,?,?,?)", ctx.Param("warehouse_id"), ctx.Param("provider_id"), itemDTI.Amount, itemDTI.Status, itemDTI.Name_item, itemDTI.Price, itemDTI.Description)
+			_, err := itemDB.Exec("insert into item (warehouse_id,provider_id,quantity,status,item_name, unit_price, description) value(?,?,?,?,?,?,?)", ctx.Param("warehouse_id"), ctx.Param("provider_id"), itemDTI.Quantity, itemDTI.Status, itemDTI.ItemName, itemDTI.UnitPrice, itemDTI.Description)
 			if err != nil {
 				ctx.JSON(500, gin.H{
 					"messages": err,
@@ -87,7 +63,7 @@ func GetAllItem() gin.HandlerFunc {
 		var items []Item
 		for rows.Next() {
 			var item Item
-			if err := rows.Scan(&item.Id, &item.WarehouseId, &item.ProviderId, &item.Amount, &item.Status, &item.Name_item, &item.Price, item.Description); err == nil {
+			if err := rows.Scan(&item.Id, &item.WarehouseID, &item.ProviderID, &item.Quantity, &item.Status, &item.ItemName, &item.UnitPrice, item.Description); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
 				})
@@ -108,7 +84,7 @@ func GetItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var item Item
 		row := itemDB.QueryRow("select * from item where id = " + ctx.Param(("id")))
-		if err := row.Scan(&item.Id, &item.WarehouseId, &item.ProviderId, &item.Amount, &item.Status, &item.Name_item, &item.Price, item.Description); err == nil {
+		if err := row.Scan(&item.Id, &item.WarehouseID, &item.ProviderID, &item.Quantity, &item.Status, &item.ItemName, &item.UnitPrice, item.Description); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
@@ -127,11 +103,11 @@ func UpdateItem() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var item Item
 		if err := ctx.ShouldBindJSON(&item); err == nil {
-			update, err := itemDB.Preparex("update item set warehouse_id=?,provider_id=?,status=?,name_item=?,price=?,description=? where id=" + ctx.Param("id"))
+			update, err := itemDB.Preparex("update item set warehouse_id=?,provider_id=?,status=?,item_name=?,unit_price=?,description=? where id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err)
 			}
-			_, err = update.Exec(item.WarehouseId, item.ProviderId, item.Status, item.Name_item, item.Price, item.Description)
+			_, err = update.Exec(item.WarehouseID, item.ProviderID, item.Status, item.ItemName, item.UnitPrice, item.Description)
 			if err != nil {
 				metrics.DB.ErrCnt.With(prometheus.Labels{
 					"env":    "local",

@@ -12,22 +12,22 @@ import (
 )
 
 type Warehouse struct {
-	Name_warehouse string `json:"name_warehouse"`
-	Address        string `json:"address"`
-	Phone_Number   string `json:"phone_number"`
+	WarehouseName string `json:"WarehouseName"`
+	Address       string `json:"Address"`
+	PhoneNumber   string `json:"PhoneNumber"`
 }
-type WarehouseId struct {
-	Id             int    `json:"id"`
-	Name_warehouse string `json:"name_warehouse"`
-	Address        string `json:"address"`
-	Phone_Number   string `json:"phone_number"`
+type WarehouseID struct {
+	Id            int    `json:"Id"`
+	WarehouseName string `json:"WarehouseName"`
+	Address       string `json:"Address"`
+	PhoneNumber   string `json:"PhoneNumber"`
 }
 
 func CreatWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var warehouse Warehouse
 		if err := ctx.ShouldBindJSON(&warehouse); err == nil {
-			_, err := itemDB.Exec("INSERT INTO warehouse(name_warehouse, address, phone_number) VALUES(?,?,?)", warehouse.Name_warehouse, warehouse.Address, warehouse.Phone_Number)
+			_, err := itemDB.Exec("INSERT INTO warehouse(warehouse_name, address, phone_number) VALUES(?,?,?)", warehouse.WarehouseName, warehouse.Address, warehouse.PhoneNumber)
 			if err != nil {
 				ctx.JSON(500, gin.H{
 					"messages": err,
@@ -50,8 +50,8 @@ func CreatWarehouse() gin.HandlerFunc {
 func GetWarehouseById() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		row := itemDB.QueryRow("SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id= " + ctx.Param("id"))
-		var warehouseId WarehouseId
-		if err := row.Scan(&warehouseId.Id, &warehouseId.Name_warehouse, &warehouseId.Address, warehouseId.Phone_Number); err == nil {
+		var WarehouseID WarehouseID
+		if err := row.Scan(&WarehouseID.Id, &WarehouseID.WarehouseName, &WarehouseID.Address, WarehouseID.PhoneNumber); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"messages": "error ",
 			})
@@ -63,7 +63,7 @@ func GetWarehouseById() gin.HandlerFunc {
 			}).Inc()
 			return
 		}
-		ctx.JSON(200, warehouseId)
+		ctx.JSON(200, WarehouseID)
 	}
 }
 
@@ -75,11 +75,11 @@ func GetWarehouseAll() gin.HandlerFunc {
 				"message": "error",
 			})
 		}
-		var warehouseId []WarehouseId
+		var warehouseIDs []WarehouseID
 
 		for rows.Next() {
-			var singleWarehouse WarehouseId
-			if err := rows.Scan(&singleWarehouse.Id, &singleWarehouse.Name_warehouse, &singleWarehouse.Phone_Number, singleWarehouse.Address); err == nil {
+			var SingleWarehouseID WarehouseID
+			if err := rows.Scan(&SingleWarehouseID.Id, &SingleWarehouseID.WarehouseName, &SingleWarehouseID.PhoneNumber, SingleWarehouseID.Address); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"messages": "error",
 				})
@@ -91,23 +91,23 @@ func GetWarehouseAll() gin.HandlerFunc {
 				}).Inc()
 				return
 			}
-			warehouseId = append(warehouseId, singleWarehouse)
+			warehouseIDs = append(warehouseIDs, SingleWarehouseID)
 		}
-		ctx.JSON(200, warehouseId)
+		ctx.JSON(200, warehouseIDs)
 	}
 }
 
 func UpdateWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var warehouse Warehouse
-		if err := ctx.ShouldBindJSON(&warehouse); err == nil {
-			update, err := itemDB.Prepare("UPDATE warehouse SET name_warehouse=?, address=?, phone_number=? WHERE id=" + ctx.Param("id"))
+		var Warehouse Warehouse
+		if err := ctx.ShouldBindJSON(&Warehouse); err == nil {
+			update, err := itemDB.Prepare("UPDATE warehouse SET warehouse_name=?, address=?, phone_number=? WHERE id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err.Error())
 			}
-			update.Exec(warehouse.Name_warehouse, warehouse.Address, warehouse.Phone_Number)
+			update.Exec(Warehouse.WarehouseName, Warehouse.Address, Warehouse.PhoneNumber)
 
-			ctx.JSON(200, warehouse)
+			ctx.JSON(200, Warehouse)
 		} else {
 			ctx.JSON(500, gin.H{
 				"message": "error",
