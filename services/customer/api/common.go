@@ -1,10 +1,10 @@
 package api
 
-import "github.com/jmoiron/sqlx"
+import "github.com/tranhanh18042/e-comere/services/helper"
 
-var customerDB *sqlx.DB
+var customerDB *helper.SvcDB
 
 // UseDB sets db to be used for service order as global var
-func UseDB(db *sqlx.DB) {
+func UseDB(db *helper.SvcDB) {
 	customerDB = db
 }

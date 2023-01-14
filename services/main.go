@@ -1,57 +1,78 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"github.com/tranhanh18042/e-comere/services/customer"
-	customerDB "github.com/tranhanh18042/e-comere/services/customer/db"
+	"github.com/tranhanh18042/e-comere/services/helper"
 	"github.com/tranhanh18042/e-comere/services/item"
-	itemDB "github.com/tranhanh18042/e-comere/services/item/db"
 	"github.com/tranhanh18042/e-comere/services/order"
+	"github.com/tranhanh18042/e-comere/services/pkg/logger"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
+)
+
+const (
+	svcItem = "svc_item"
+	svcOrder = "svc_order"
+	svcCustomer = "svc_customer"
 )
 
 func main() {
+	logger.Init()
+	ctx := context.Background()
+
+	logger.Info(ctx, "Init main")
+
 	service, _ := os.LookupEnv("ECOM_SERVICE")
 
-	var router *gin.Engine
-	var db *sqlx.DB
-	var errDBConn error
+	logger.Info(ctx, "Init DB", service)
+	db, err := initDBConn(service)
+	if err != nil {
+		panic(fmt.Errorf("cannot connect db, err: %v", err))
+	}
+	defer db.Close()
 
-	defer func() {
-		if db != nil {
-			db.Close()
-		}
-	}()
+	logger.Info(ctx, "Init metrics", service)
+	go metrics.StatDB("local", "service", db.DB.DB)
 
-	switch service {
-	case "svc_item":
-		itemDBConn := "root:root@tcp(db_ecom_item:3306)/service_item?collation=utf8mb4_unicode_ci&parseTime=true"
-		db, errDBConn = itemDB.NewItemDB(itemDBConn)
-		if errDBConn != nil {
-			panic(fmt.Errorf("cannot connect to db: %s, err: %v", itemDBConn, errDBConn))
-		}
-		router = item.InitRoute(db)
-	case "svc_customer":
-		customerDBConn := "root:root@tcp(db_ecom_customer:3306)/service_customer?collation=utf8mb4_unicode_ci&parseTime=true"
-		db, errDBConn = customerDB.NewCustomerDB(customerDBConn)
-		if errDBConn != nil {
-			panic(fmt.Errorf("cannot connect to db: %s, err: %v", customerDBConn, errDBConn))
-		}
-		router = customer.InitRoute(db)
-	case "svc_order":
-		orderDBConn := "root:root@tcp(db_ecom_order:3306)/service_order?collation=utf8mb4_unicode_ci&parseTime=true"
-		db, errDBConn = itemDB.NewItemDB(orderDBConn)
-		if errDBConn != nil {
-			panic(fmt.Errorf("cannot connect to db: %s, err: %v", orderDBConn, errDBConn))
-		}
-		router = order.InitRoute(db)
-	default:
-		fmt.Println("not support service:", service)
-		os.Exit(1)
+	logger.Info(ctx, "Init service", service)
+	router, err := initService(service, db)
+	if err != nil {
+		panic(fmt.Errorf("cannot init service, err: %v", err))
 	}
 
+	logger.Info(ctx, "Service start", service)
 	router.Run()
+}
+
+func initDBConn(service string) (*helper.SvcDB, error) {
+	var dbConnStr string
+	switch service {
+	case svcItem:
+		dbConnStr = "root:root@tcp(db_ecom_item:3306)/service_item?collation=utf8mb4_unicode_ci&parseTime=true"
+	case svcCustomer:
+		dbConnStr = "root:root@tcp(db_ecom_customer:3306)/service_customer?collation=utf8mb4_unicode_ci&parseTime=true"
+	case svcOrder:
+		dbConnStr = "root:root@tcp(db_ecom_order:3306)/service_order?collation=utf8mb4_unicode_ci&parseTime=true"
+	default:
+		return nil, fmt.Errorf("invalid service: %s", service)
+	}
+
+	return helper.NewDBConn(service, dbConnStr)
+}
+
+func initService(service string, db *helper.SvcDB) (*gin.Engine, error) {
+	switch service {
+	case svcItem:
+		return item.InitRoute(db), nil
+	case svcCustomer:
+		return customer.InitRoute(db), nil
+	case svcOrder:
+		return order.InitRoute(db), nil
+	default:
+		return nil, fmt.Errorf("cannot init service for service name: %s", service)
+	}
 }
