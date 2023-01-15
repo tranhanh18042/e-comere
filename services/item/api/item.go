@@ -18,8 +18,8 @@ type ItemRequest struct {
 	ItemName    string `json:"item_name"`
 	UnitPrice   int    `json:"unit_price"`
 	Description string `json:"description"`
-	WarehouseID int `json:"warehouse_id"`
-	ProviderId int `json:"provider_id"`
+	WarehouseID int    `json:"warehouse_id"`
+	ProviderId  int    `json:"provider_id"`
 }
 
 func GetListItems() gin.HandlerFunc {
@@ -29,7 +29,7 @@ func GetListItems() gin.HandlerFunc {
 			DBName: itemDB.Name,
 			Target: "get-list-items",
 		}
-		err := helper.DBSelectWithMetrics(labels, itemDB, &items, "select * from item")
+		err := helper.DBSelectWithMetrics(labels, itemDB, &items, "SELECT * FROM item")
 		if err != nil {
 			if err == sql.ErrNoRows {
 				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
@@ -40,7 +40,7 @@ func GetListItems() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(200, helper.SuccessResponse{
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{
 			Payload: items,
 		})
 	}
@@ -52,7 +52,7 @@ func GetItemByID() gin.HandlerFunc {
 			DBName: itemDB.Name,
 			Target: "get-item-by-id",
 		}
-		err := helper.DBGetWithMetrics(labels, itemDB, &item, "select * from item where id = ?", ctx.Param("id"))
+		err := helper.DBGetWithMetrics(labels, itemDB, &item, "SELECT * FROM item WHERE id = ?", ctx.Param("id"))
 		if err != nil {
 			if err == sql.ErrNoRows {
 				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
@@ -62,7 +62,7 @@ func GetItemByID() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(200, helper.SuccessResponse{
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{
 			Payload: item,
 		})
 	}
@@ -125,7 +125,7 @@ func UpdateItem() gin.HandlerFunc {
 			Target: "update-item",
 		}
 		_, err := helper.DBExecWithMetrics(labels, itemDB,
-			"update item set warehouse_id=?, provider_id=?, status=?, item_name=?, unit_price=?, description=? where id= ?",
+			"UPDATE item SET warehouse_id=?, provider_id=?, status=?, item_name=?, unit_price=?, description=? WHERE id= ?",
 			itemUpdate.WarehouseID,
 			itemUpdate.ProviderID,
 			itemUpdate.Status,
@@ -137,6 +137,6 @@ func UpdateItem() gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
-		ctx.JSON(200, itemUpdate)
+		ctx.JSON(http.StatusOK, itemUpdate)
 	}
 }

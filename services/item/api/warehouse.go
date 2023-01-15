@@ -23,9 +23,9 @@ func CreatWarehouse() gin.HandlerFunc {
 		var warehouseReq WarehouseRequest
 		if err := ctx.ShouldBindJSON(&warehouseReq); err == nil {
 			_, err := itemDB.Exec("INSERT INTO warehouse(warehouse_name, address, phone_number) VALUES(?,?,?)",
-			warehouseReq.WarehouseName,
-			warehouseReq.Address,
-			warehouseReq.PhoneNumber)
+				warehouseReq.WarehouseName,
+				warehouseReq.Address,
+				warehouseReq.PhoneNumber)
 			if err != nil {
 				ctx.JSON(500, gin.H{
 					"messages": err,
@@ -65,7 +65,7 @@ func GetWarehouseById() gin.HandlerFunc {
 	}
 }
 
-func GetWarehouseAll() gin.HandlerFunc {
+func GetListWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		rows, err := itemDB.Query("SELECT * FROM warehouse")
 		if err != nil {
