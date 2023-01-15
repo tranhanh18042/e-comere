@@ -18,7 +18,7 @@ func InitRoute(db *helper.SvcDB) *gin.Engine {
 	r.POST("/api/customer", api.CreateCustomer())
 	r.PUT("api/customer/:id", api.UpdateCustomer())
 	r.GET("/api/customer/:id", api.GetCustomerByID())
-	r.GET("/api/customer", api.GetListCustomer())
+	r.GET("/api/customer", api.GetListCustomers())
 
 	r.GET("/metrics", helper.ToGinHandler(promhttp.Handler()))
 	return r

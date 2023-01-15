@@ -1,13 +1,13 @@
 {
 	"info": {
-		"_postman_id": "dc6fd5d9-4827-4787-833c-59072014f8d3",
+		"_postman_id": "83a03afe-57ac-45e2-9312-6b49eb7fba32",
 		"name": "item_service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23008784"
+		"_exporter_id": "17698403"
 	},
 	"item": [
 		{
-			"name": "getItem",
+			"name": "Get Item By ID",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -24,7 +24,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/api/item/1",
+					"raw": "http://localhost:8083/api/item/2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -33,14 +33,14 @@
 					"path": [
 						"api",
 						"item",
-						"1"
+						"2"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "getAllItem",
+			"name": "Get List Items",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -72,13 +72,13 @@
 			"response": []
 		},
 		{
-			"name": "updateItem",
+			"name": "Update Item",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Id\": 1,\n    \"WarehouseId\": 1,\n    \"ProviderId\": 1,\n    \"Amount\": 1,\n    \"Status\": 0,\n    \"Name_item\": \"hello222222\",\n    \"Price\": 10,\n    \"description\": \"\"\n}",
+					"raw": "{\n    \"warehouse_id\": 1,\n    \"provider_id\": 1,\n    \"quantity\": 99,\n    \"status\": 0,\n    \"item_name\": \"hello222222\",\n    \"unit_price\": 10,\n    \"description\": \"item description\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -86,7 +86,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/api/item/1",
+					"raw": "http://localhost:8083/api/item/2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -95,20 +95,20 @@
 					"path": [
 						"api",
 						"item",
-						"1"
+						"2"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "AddItem",
+			"name": "Create Item",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Id\": 1,\n    \"WarehouseId\": 1,\n    \"ProviderId\": 1,\n    \"Amount\": 1,\n    \"Status\": 0,\n    \"Name_item\": \"hello2333\",\n    \"Price\": 10,\n    \"description\": \"\"\n}",
+					"raw": "{\n    \"warehouse_id\": 1,\n    \"provider_id\": 1,\n    \"quantity\": 99,\n    \"status\": 0,\n    \"item_name\": \"hello222222\",\n    \"unit_price\": 10,\n    \"description\": \"item description\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -116,7 +116,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8083/api/item/1/1",
+					"raw": "http://localhost:8083/api/item",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -124,22 +124,20 @@
 					"port": "8083",
 					"path": [
 						"api",
-						"item",
-						"1",
-						"1"
+						"item"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "add provider",
+			"name": "Add Provider",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name_provider\":\"hello\",\n    \"address\":\"address\",\n    \"phone _number\":\"123\"\n}",
+					"raw": "{\n    \"provider_name\":\"hello\",\n    \"address\":\"address\",\n    \"phone_number\":\"123\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -162,12 +160,25 @@
 			"response": []
 		},
 		{
-			"name": "add warehouse",
+			"name": "Add Warehouse",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"warehouse_name\": \"wh name\",\n    \"address\": \"wh addr\",\n    \"phone_number\": \"090999999\"\n}"
+				},
 				"url": {
-					"raw": ""
+					"raw": "http://localhost:8083/api/warehouse",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"api",
+						"warehouse"
+					]
 				}
 			},
 			"response": []
