@@ -1,25 +1,19 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tranhanh18042/e-comere/services/helper"
+	"github.com/tranhanh18042/e-comere/services/model"
+	"github.com/tranhanh18042/e-comere/services/pkg/logger"
+	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 )
 
-type Customer struct {
+type CustomerRequest struct {
 	Status      int    `json:"status" db:"Status"`
-	Username    string `json:"username" db:"username"`
-	Password    string `json:"password" db:"password"`
-	FirstName   string `json:"first_name" db:"first_name"`
-	LastName    string `json:"last_name" db:"last_name"`
-	Address     string `json:"address" db:"address"`
-	PhoneNumber string `json:"phone_number" db:"phone_number"`
-	Email       string `json:"email" db:"email"`
-}
-
-type CustomerDetail struct {
-	Id          int    `json:"id" db:"id"`
-	Status      int    `json:"status" db:"status"`
 	Username    string `json:"username" db:"username"`
 	Password    string `json:"password" db:"password"`
 	FirstName   string `json:"first_name" db:"first_name"`
@@ -31,69 +25,124 @@ type CustomerDetail struct {
 
 func CreateCustomer() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var Customer Customer
-		if err := ctx.ShouldBindJSON(&Customer); err == nil {
-			_, err := customerDB.Exec("INSERT INTO customer(status, username, password, first_name, last_name, address, phone_number, email) VALUES(?,?,?,?,?,?,?,?)", Customer.Status, Customer.Username, Customer.Password, Customer.FirstName, Customer.LastName, Customer.Address, Customer.PhoneNumber, Customer.Email)
-			if err != nil {
-				ctx.JSON(500, gin.H{
-					"message": err.Error(),
-				})
-			}
-			ctx.JSON(200, Customer)
-		} else {
-			ctx.JSON(500, gin.H{
-				"message": err.Error(),
-			})
-		}
-	}
-}
-func GetCustomerByID() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var CustomerDetail CustomerDetail
-		row := customerDB.QueryRow("SELECT id, status, username, password, first_name, last_name, address, phone_number, email from customer WHERE id = " + ctx.Param("id"))
-		if err := row.Scan(&CustomerDetail.Id, &CustomerDetail.Status, &CustomerDetail.Username, &CustomerDetail.Password, &CustomerDetail.FirstName, &CustomerDetail.LastName, &CustomerDetail.Address, &CustomerDetail.PhoneNumber, CustomerDetail.Email); err == nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
-			})
+		var customerReq CustomerRequest
+		if err := ctx.ShouldBindJSON(&customerReq); err != nil {
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "customer",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
+			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
 			return
 		}
-		ctx.JSON(200, CustomerDetail)
-	}
-}
-func GetListCustomer() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var customerDetail []CustomerDetail
-		rows, err := customerDB.Query("SELECT * FROM customer")
+
+		labels := helper.DBMetricsLabels{
+			DBName: customerDB.Name,
+			Target: "create-customer",
+		}
+		_, err := helper.DBExecWithMetrics(labels, customerDB,
+			"INSERT INTO customer(status, username, password, first_name, last_name, address, phone_number, email) VALUES(?,?,?,?,?,?,?,?)",
+			customerReq.Status,
+			customerReq.Username,
+			customerReq.Password,
+			customerReq.FirstName,
+			customerReq.LastName,
+			customerReq.Address,
+			customerReq.PhoneNumber,
+			customerReq.Email)
+
 		if err != nil {
-			panic(err)
+			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			return
 		}
-		for rows.Next() {
-			var singleCustomerDetail CustomerDetail
-			if err := rows.Scan(&singleCustomerDetail.Id, &singleCustomerDetail.Status, &singleCustomerDetail.Username, &singleCustomerDetail.Password, &singleCustomerDetail.FirstName, &singleCustomerDetail.LastName, &singleCustomerDetail.Address, &singleCustomerDetail.PhoneNumber, singleCustomerDetail.Email); err == nil {
-				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-					"message": err,
-				})
-				return
-			}
-			customerDetail = append(customerDetail, singleCustomerDetail)
-		}
-		ctx.JSON(http.StatusOK, customerDetail)
+
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: customerReq})
 	}
 }
+
+func GetCustomerByID() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var customer model.Customer
+		labels := helper.DBMetricsLabels{
+			DBName: customerDB.Name,
+			Target: "get-customer-by-id",
+		}
+		err := helper.DBGetWithMetrics(labels, customerDB, &customer, "select * from customer where id = ?", ctx.Param("id"))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
+			} else {
+				ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			}
+			return
+		}
+
+		ctx.JSON(200, helper.SuccessResponse{
+			Payload: customer,
+		})
+	}
+}
+
+func GetListCustomers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var customers []model.Customer
+		labels := helper.DBMetricsLabels{
+			DBName: customerDB.Name,
+			Target: "get-list-customers",
+		}
+		err := helper.DBSelectWithMetrics(labels, customerDB, &customers, "select * from customer")
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
+			} else {
+				logger.Error(ctx, "item svc get-list-customers internal error", err)
+				ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			}
+			return
+		}
+
+		ctx.JSON(200, helper.SuccessResponse{
+			Payload: customers,
+		})
+	}
+}
+
 func UpdateCustomer() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var CustomerUpdate Customer
-		if err := ctx.ShouldBindJSON(&CustomerUpdate); err == nil {
-			update, err := customerDB.Prepare("UPDATE customer SET status=?, username=?,password=? ,first_name=?, last_name=?, address=?, phone_number=?, email=? WHERE id=" + ctx.Param("id"))
-			if err != nil {
-				panic(err)
-			}
-			update.Exec(CustomerUpdate.Status, CustomerUpdate.Username, CustomerUpdate.Password, CustomerUpdate.FirstName, CustomerUpdate.LastName, CustomerUpdate.Address, CustomerUpdate.PhoneNumber, CustomerUpdate.Email)
-			ctx.JSON(200, CustomerUpdate)
-		} else {
-			ctx.JSON(500, gin.H{
-				"message": "error",
-			})
+		var customerUpdate model.Customer
+		if err := ctx.ShouldBindJSON(&customerUpdate); err != nil {
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "customer",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
+
+			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
+			return
 		}
+
+		labels := helper.DBMetricsLabels{
+			DBName: customerDB.Name,
+			Target: "update-item",
+		}
+
+		_, err := helper.DBExecWithMetrics(labels, customerDB,
+			"UPDATE customer SET status=?, username=?,password=? ,first_name=?, last_name=?, address=?, phone_number=?, email=? WHERE id=?",
+			customerUpdate.Status,
+			customerUpdate.Username,
+			customerUpdate.Password,
+			customerUpdate.FirstName,
+			customerUpdate.LastName,
+			customerUpdate.Address,
+			customerUpdate.PhoneNumber,
+			customerUpdate.Email,
+			ctx.Param("id"))
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			return
+		}
+		ctx.JSON(200, customerUpdate)
 	}
 }

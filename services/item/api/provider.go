@@ -6,29 +6,27 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tranhanh18042/e-comere/services/helper"
+	"github.com/tranhanh18042/e-comere/services/model"
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
 )
 
-type Provider struct {
-	ProviderName string `json:"ProviderName"`
-	PhoneNumber  string `json:"PhoneNumber"`
-	Address      string `json:"Address"`
-}
-
-type ProviderID struct {
-	Id           int    `json:"Id"`
-	ProviderName string `json:"ProviderName"`
-	PhoneNumber  string `json:"PhoneNumber"`
-	Address      string `json:"Address"`
+type ProviderRequest struct {
+	ProviderName string `json:"provider_name"`
+	PhoneNumber  string `json:"phone_number"`
+	Address      string `json:"address"`
 }
 
 func CreatProvider() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var provider Provider
-		if err := ctx.ShouldBindJSON(&provider); err == nil {
-			_, err := itemDB.Exec("INSERT INTO provider(provider_name,phone_number,address) VALUES(?,?,?)", provider.ProviderName, provider.PhoneNumber, provider.Address)
+		var providerReq ProviderRequest
+		if err := ctx.ShouldBindJSON(&providerReq); err == nil {
+			_, err := itemDB.Exec("INSERT INTO provider(provider_name,phone_number,address) VALUES(?,?,?)",
+			providerReq.ProviderName,
+			providerReq.PhoneNumber,
+			providerReq.Address)
+
 			if err != nil {
 				metrics.API.ErrCnt.With(prometheus.Labels{
 					"svc":  "item",
@@ -41,7 +39,7 @@ func CreatProvider() gin.HandlerFunc {
 				})
 				return
 			}
-			ctx.JSON(200, provider)
+			ctx.JSON(200, providerReq)
 		} else {
 			ctx.JSON(500, gin.H{"error": err.Error()})
 			metrics.API.ErrCnt.With(prometheus.Labels{
@@ -53,11 +51,11 @@ func CreatProvider() gin.HandlerFunc {
 		}
 	}
 }
-func GetProviderId() gin.HandlerFunc {
+func GetProviderById() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var providerId ProviderID
+		var provider model.Provider
 		row := itemDB.QueryRow("select * from provider where id = " + ctx.Param(("id")))
-		if err := row.Scan(&providerId.Id, &providerId.ProviderName, &providerId.PhoneNumber, providerId.Address); err == nil {
+		if err := row.Scan(&provider.Id, &provider.ProviderName, &provider.PhoneNumber, provider.Address); err == nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err,
 			})
@@ -69,7 +67,7 @@ func GetProviderId() gin.HandlerFunc {
 			}).Inc()
 			return
 		}
-		ctx.JSON(200, providerId)
+		ctx.JSON(200, provider)
 	}
 }
 func GetProviderAll() gin.HandlerFunc {
@@ -78,9 +76,9 @@ func GetProviderAll() gin.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
-		var providerId []ProviderID
+		var providers []model.Provider
 		for rows.Next() {
-			var singleProviderId ProviderID
+			var singleProviderId model.Provider
 			if err := rows.Scan(&singleProviderId.Id, &singleProviderId.ProviderName, &singleProviderId.PhoneNumber, singleProviderId.Address); err == nil {
 				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 					"message": err,
@@ -92,21 +90,21 @@ func GetProviderAll() gin.HandlerFunc {
 					"env":  "local",
 				}).Inc()
 			}
-			providerId = append(providerId, singleProviderId)
+			providers = append(providers, singleProviderId)
 		}
-		ctx.JSON(200, providerId)
+		ctx.JSON(200, providers)
 	}
 }
 func UpdateProvider() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var provider Provider
-		if err := ctx.ShouldBindJSON(&provider); err == nil {
+		var providerReq ProviderRequest
+		if err := ctx.ShouldBindJSON(&providerReq); err == nil {
 			update, err := itemDB.Preparex("update provider set provider_name=?,phone_number=?,address=? where id=" + ctx.Param("id"))
 			if err != nil {
 				panic(err)
 			}
-			update.Exec(provider.ProviderName, provider.PhoneNumber, provider.Address)
-			ctx.JSON(200, provider)
+			update.Exec(providerReq.ProviderName, providerReq.PhoneNumber, providerReq.Address)
+			ctx.JSON(200, providerReq)
 		} else {
 			ctx.JSON(500, gin.H{
 				"message": "error",

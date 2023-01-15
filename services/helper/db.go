@@ -55,7 +55,7 @@ func DBGetWithMetrics(labels DBMetricsLabels, db *SvcDB, dest interface{}, query
 	return db.Get(dest, query, args...)
 }
 
-func DBSelectWithMetrics(labels DBMetricsLabels, db *sqlx.DB, dest interface{}, query string, args ...interface{}) (err error) {
+func DBSelectWithMetrics(labels DBMetricsLabels, db *SvcDB, dest interface{}, query string, args ...interface{}) (err error) {
 	start := time.Now().UnixMilli()
 	defer func(){
 		if err != nil {
