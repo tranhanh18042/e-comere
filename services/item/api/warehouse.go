@@ -1,12 +1,14 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tranhanh18042/e-comere/services/helper"
 	"github.com/tranhanh18042/e-comere/services/model"
+	"github.com/tranhanh18042/e-comere/services/pkg/logger"
 	"github.com/tranhanh18042/e-comere/services/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
@@ -18,103 +20,102 @@ type WarehouseRequest struct {
 	PhoneNumber   string `json:"phone_number"`
 }
 
-func CreatWarehouse() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var warehouseReq WarehouseRequest
-		if err := ctx.ShouldBindJSON(&warehouseReq); err == nil {
-			_, err := itemDB.Exec("INSERT INTO warehouse(warehouse_name, address, phone_number) VALUES(?,?,?)",
-				warehouseReq.WarehouseName,
-				warehouseReq.Address,
-				warehouseReq.PhoneNumber)
-			if err != nil {
-				ctx.JSON(500, gin.H{
-					"messages": err,
-				})
-			}
-
-			ctx.JSON(200, warehouseReq)
-		} else {
-			ctx.JSON(500, gin.H{"error": err.Error()})
-			metrics.API.ErrCnt.With(prometheus.Labels{
-				"svc":  "item",
-				"path": ctx.FullPath(),
-				"type": helper.MetricInvalidParams,
-				"env":  "local",
-			}).Inc()
-		}
-	}
-}
-
 func GetWarehouseById() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		row := itemDB.QueryRow("SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id= " + ctx.Param("id"))
 		var warehouse model.Warehouse
-		if err := row.Scan(&warehouse.Id, &warehouse.WarehouseName, &warehouse.Address, warehouse.PhoneNumber); err == nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"messages": "error ",
-			})
-			metrics.API.ErrCnt.With(prometheus.Labels{
-				"svc":  "item",
-				"path": ctx.FullPath(),
-				"type": helper.MetricQueryError,
-				"env":  "local",
-			}).Inc()
+		labels := helper.DBMetricsLabels{
+			DBName: itemDB.Name,
+			Target: "get-warehouse-by-id",
+		}
+		err := helper.DBGetWithMetrics(labels, itemDB, &warehouse, "SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id=?", ctx.Param("id"))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
+			} else {
+				ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			}
 			return
 		}
-		ctx.JSON(200, warehouse)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: warehouse})
 	}
 }
 
 func GetListWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		rows, err := itemDB.Query("SELECT * FROM warehouse")
-		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "error",
-			})
-		}
 		var warehouses []model.Warehouse
-		for rows.Next() {
-			var singleWarehouseID model.Warehouse
-			if err := rows.Scan(&singleWarehouseID.Id, &singleWarehouseID.WarehouseName, &singleWarehouseID.PhoneNumber, singleWarehouseID.Address); err == nil {
-				ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-					"messages": "error",
-				})
-				metrics.API.ErrCnt.With(prometheus.Labels{
-					"svc":  "item",
-					"path": ctx.FullPath(),
-					"type": helper.MetricQueryError,
-					"env":  "local",
-				}).Inc()
-				return
-			}
-			warehouses = append(warehouses, singleWarehouseID)
+		labels := helper.DBMetricsLabels{
+			DBName: itemDB.Name,
+			Target: "get-list-warehouse",
 		}
-		ctx.JSON(200, warehouses)
+		err := helper.DBSelectWithMetrics(labels, itemDB, &warehouses, "SELECT * FROM warehouse")
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
+			} else {
+				logger.Error(ctx, "item svc get-list-warehouse internal error", err)
+				ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			}
+			return
+		}
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: warehouses})
 	}
 }
 
 func UpdateWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var warehouseReq WarehouseRequest
-		if err := ctx.ShouldBindJSON(&warehouseReq); err == nil {
-			update, err := itemDB.Prepare("UPDATE warehouse SET warehouse_name=?, address=?, phone_number=? WHERE id=" + ctx.Param("id"))
-			if err != nil {
-				panic(err.Error())
-			}
-			update.Exec(warehouseReq.WarehouseName, warehouseReq.Address, warehouseReq.PhoneNumber)
-
-			ctx.JSON(200, warehouseReq)
-		} else {
-			ctx.JSON(500, gin.H{
-				"message": "error",
-			})
+		if err := ctx.ShouldBindJSON(&warehouseReq); err != nil {
 			metrics.API.ErrCnt.With(prometheus.Labels{
 				"svc":  "item",
 				"path": ctx.FullPath(),
 				"type": helper.MetricInvalidParams,
 				"env":  "local",
 			}).Inc()
+			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
+			return
 		}
+		labels := helper.DBMetricsLabels{
+			DBName: itemDB.Name,
+			Target: "update-warehouse",
+		}
+		_, err := helper.DBExecWithMetrics(labels, itemDB,
+			"UPDATE warehouse SET warehouse_name=?, address=?, phone_number=? WHERE id=?",
+			ctx.Param("id"))
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			return
+		}
+		ctx.JSON(http.StatusOK, warehouseReq)
+	}
+}
+
+func CreatWarehouse() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var warehouseReq WarehouseRequest
+		if err := ctx.ShouldBindJSON(&warehouseReq); err == nil {
+			metrics.API.ErrCnt.With(prometheus.Labels{
+				"svc":  "item",
+				"path": ctx.FullPath(),
+				"type": helper.MetricInvalidParams,
+				"env":  "local",
+			}).Inc()
+			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
+			return
+		}
+		labels := helper.DBMetricsLabels{
+			DBName: itemDB.Name,
+			Target: "create-warehouse",
+		}
+		_, err := helper.DBExecWithMetrics(labels, itemDB,
+			"INSERT INTO warehouse(warehouse_name, address, phone_number) VALUES(?,?,?)",
+			warehouseReq.WarehouseName,
+			warehouseReq.Address,
+			warehouseReq.PhoneNumber)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, warehouseReq)
 	}
 }
