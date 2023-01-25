@@ -18,7 +18,7 @@ const (
 )
 
 type SuccessResponse struct {
-	Payload any
+	Payload any `json:"payload"`
 }
 
 type ErrorResponse struct {
