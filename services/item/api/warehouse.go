@@ -27,11 +27,14 @@ func GetWarehouseById() gin.HandlerFunc {
 			DBName: itemDB.Name,
 			Target: "get-warehouse-by-id",
 		}
-		err := helper.DBGetWithMetrics(labels, itemDB, &warehouse, "SELECT id, name_warehouse, address,phone_number FROM warehouse WHERE id=?", ctx.Param("id"))
+		err := helper.DBGetWithMetrics(labels, itemDB, &warehouse,
+			"SELECT id, warehouse_name, address,phone_number FROM warehouse WHERE id=?",
+			ctx.Param("id"))
 		if err != nil {
 			if err == sql.ErrNoRows {
 				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
 			} else {
+				logger.Info(ctx, "internal error", err)
 				ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			}
 			return
@@ -47,7 +50,8 @@ func GetListWarehouse() gin.HandlerFunc {
 			DBName: itemDB.Name,
 			Target: "get-list-warehouse",
 		}
-		err := helper.DBSelectWithMetrics(labels, itemDB, &warehouses, "SELECT * FROM warehouse")
+		err := helper.DBSelectWithMetrics(labels, itemDB, &warehouses,
+			"SELECT * FROM warehouse")
 		if err != nil {
 			if err == sql.ErrNoRows {
 				ctx.JSON(http.StatusNotFound, helper.DataNotFoundResponse)
@@ -71,6 +75,7 @@ func UpdateWarehouse() gin.HandlerFunc {
 				"type": helper.MetricInvalidParams,
 				"env":  "local",
 			}).Inc()
+			logger.Info(ctx, "invalid params", err)
 			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
 			return
 		}
@@ -80,8 +85,13 @@ func UpdateWarehouse() gin.HandlerFunc {
 		}
 		_, err := helper.DBExecWithMetrics(labels, itemDB,
 			"UPDATE warehouse SET warehouse_name=?, address=?, phone_number=? WHERE id=?",
-			ctx.Param("id"))
+			warehouseReq.WarehouseName,
+			warehouseReq.Address,
+			warehouseReq.PhoneNumber,
+			ctx.Param("id"),
+		)
 		if err != nil {
+			logger.Info(ctx, "internal error", err)
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
@@ -92,13 +102,14 @@ func UpdateWarehouse() gin.HandlerFunc {
 func CreatWarehouse() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var warehouseReq WarehouseRequest
-		if err := ctx.ShouldBindJSON(&warehouseReq); err == nil {
+		if err := ctx.ShouldBindJSON(&warehouseReq); err != nil {
 			metrics.API.ErrCnt.With(prometheus.Labels{
 				"svc":  "item",
 				"path": ctx.FullPath(),
 				"type": helper.MetricInvalidParams,
 				"env":  "local",
 			}).Inc()
+			logger.Info(ctx, "invalid params", err)
 			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
 			return
 		}

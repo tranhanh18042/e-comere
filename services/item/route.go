@@ -16,19 +16,19 @@ func InitRoute(db *helper.SvcDB) *gin.Engine {
 	r.GET("/api/health", api.NewHealthHandler())
 
 	r.POST("/api/warehouse", api.CreatWarehouse())
-	r.GET("api/warehouse/:id", api.GetWarehouseById())
+	r.GET("/api/warehouse/:id", api.GetWarehouseById())
 	r.GET("/api/warehouse", api.GetListWarehouse())
-	r.PUT("api/warehouse/:id", api.UpdateWarehouse())
+	r.PUT("/api/warehouse/:id", api.UpdateWarehouse())
 
 	r.POST("/api/provider", api.CreatProvider())
 	r.GET("/api/provider/:id", api.GetProviderById())
-	r.GET("api/provider", api.GetListProviders())
+	r.GET("/api/provider", api.GetListProviders())
 	r.PUT("/api/provider/:id", api.UpdateProvider())
 
 	r.POST("/api/item", api.CreateItem())
-	r.GET("api/item", api.GetListItems())
-	r.GET("api/item/:id", api.GetItemByID())
-	r.PUT("api/item/:id", api.UpdateItem())
+	r.GET("/api/item", api.GetListItems())
+	r.GET("/api/item/:id", api.GetItemByID())
+	r.PUT("/api/item/:id", api.UpdateItem())
 
 	r.GET("/metrics", helper.ToGinHandler(promhttp.Handler()))
 	return r
