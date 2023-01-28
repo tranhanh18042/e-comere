@@ -15,5 +15,8 @@ func InitRoute(db *helper.SvcDB) *gin.Engine {
 	r.Use(middlewares.NewMetricsMiddleware(helper.MetricSvcNameOrder))
 	r.GET("/api/health", api.NewHealthHandler())
 	r.GET("/metrics", helper.ToGinHandler(promhttp.Handler()))
+
+	r.POST("/api/order", api.CreateOrder())
+	r.PUT("/api/order/:id", api.UpdateOrder())
 	return r
 }

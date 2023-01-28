@@ -26,6 +26,7 @@ type CustomerRequest struct {
 func CreateCustomer() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var customerReq CustomerRequest
+
 		if err := ctx.ShouldBindJSON(&customerReq); err != nil {
 			metrics.API.ErrCnt.With(prometheus.Labels{
 				"svc":  "customer",
@@ -33,6 +34,7 @@ func CreateCustomer() gin.HandlerFunc {
 				"type": helper.MetricInvalidParams,
 				"env":  "local",
 			}).Inc()
+			logger.Debug(ctx, "invalid params", err)
 			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
 			return
 		}
@@ -41,7 +43,7 @@ func CreateCustomer() gin.HandlerFunc {
 			DBName: customerDB.Name,
 			Target: "create-customer",
 		}
-		_, err := helper.DBExecWithMetrics(labels, customerDB,
+		result, err := helper.DBExecWithMetrics(labels, customerDB,
 			"INSERT INTO customer(status, username, password, first_name, last_name, address, phone_number, email) VALUES(?,?,?,?,?,?,?,?)",
 			customerReq.Status,
 			customerReq.Username,
@@ -53,11 +55,29 @@ func CreateCustomer() gin.HandlerFunc {
 			customerReq.Email)
 
 		if err != nil {
+			logger.Debug(ctx, "internal error", err)
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
 
-		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: customerReq})
+		customerID, err := result.LastInsertId()
+		if err != nil {
+			logger.Debug(ctx, "internal error", err)
+			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
+			return
+		}
+
+		createdCustomer := model.Customer{
+			Id: int(customerID),
+			Username: customerReq.Username,
+			FirstName: customerReq.FirstName,
+			LastName: customerReq.LastName,
+			Address: customerReq.Address,
+			PhoneNumber: customerReq.PhoneNumber,
+			Email: customerReq.Email,
+		}
+		logger.Debug(ctx, "created customer", createdCustomer)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: createdCustomer})
 	}
 }
 
