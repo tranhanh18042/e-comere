@@ -2,10 +2,7 @@ package client
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/tranhanh18042/e-comere/services/model"
@@ -13,41 +10,41 @@ import (
 )
 
 var customerClient *http.Client
-var customerBaseURL = "http://svc_customer:8080"
+const (
+	customerBaseURL = "http://svc_customer:8080"
+	customerCreatePath = "/api/customer"
+	customerGetPath = "/api/customer/:id"
+	customerSvc = "customer"
+)
 
 func init() {
-	customerClient = http.DefaultClient
+	customerClient = httpClient
 }
 
 func CreateCustomer(customer *model.Customer) (customerId int, err error) {
 	logger.Debug(context.Background(), "customer info", *customer)
-	data := url.Values{
-        "first_name": {customer.FirstName},
-		"last_name": {customer.LastName},
-		"address": {customer.Address},
-		"phone_number": {customer.PhoneNumber},
-		"email": {customer.Email},
-    }
-    resp, err := http.PostForm(customerBaseURL + "/api/customer", data)
-    if err != nil {
-        return 0, fmt.Errorf("cannot create customer, err: %v", err)
-    }
-
     var res model.Customer
-    json.NewDecoder(resp.Body).Decode(&res)
-    logger.Debug(context.Background(), "create customer", res)
+    err = post(customerSvc, customerCreatePath, customerClient, customerBaseURL + customerCreatePath, customer, &res)
+	if err != nil {
+		logger.Error(context.Background(), "create customer err", err)
+		return
+	}
 
+	logger.Debug(context.Background(), "create customer info", res)
 	return res.Id, nil
 }
 
 func GetCustomerByID(customerID int) (*model.Customer, error) {
-	resp, err := customerClient.Get(customerBaseURL + "/api/customer/"+strconv.FormatInt(int64(customerID), 10))
-	if err != nil {
-		return nil,  fmt.Errorf("cannot get customer with id: %d, err: %v", customerID, err)
-	}
 	var customer model.Customer
-	json.NewDecoder(resp.Body).Decode(&customer)
-    logger.Debug(context.Background(), "get customer", customer)
+	params := &getParams{
+		pathParams: map[string]string{"id": strconv.Itoa(customerID)},
+	}
+	err := get(customerSvc, customerGetPath, customerClient, customerBaseURL + params.formatURL(customerGetPath), &customer)
+	if err != nil {
+		logger.Error(context.Background(), "get customer err", err)
+		return nil, err
+	}
 
+    logger.Debug(context.Background(), "get customer", customer)
 	return &customer, nil
 }

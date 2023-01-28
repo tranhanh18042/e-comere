@@ -67,7 +67,7 @@ func CreateCustomer() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: model.Customer{
+		createdCustomer := model.Customer{
 			Id: int(customerID),
 			Username: customerReq.Username,
 			FirstName: customerReq.FirstName,
@@ -75,7 +75,9 @@ func CreateCustomer() gin.HandlerFunc {
 			Address: customerReq.Address,
 			PhoneNumber: customerReq.PhoneNumber,
 			Email: customerReq.Email,
-		}})
+		}
+		logger.Debug(ctx, "created customer", createdCustomer)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: createdCustomer})
 	}
 }
 

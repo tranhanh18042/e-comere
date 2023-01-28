@@ -52,6 +52,10 @@ func CreateOrder() gin.HandlerFunc {
 				ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
 				return
 			}
+			orderReq.CustomerFirstName = customerInfo.FirstName
+			orderReq.CustomerLastName = customerInfo.LastName
+			orderReq.CustomerPhone = customerInfo.PhoneNumber
+			orderReq.CustomerEmail = customerInfo.Email
 		} else {
 			customerID, err := client.CreateCustomer(&model.Customer{
 				FirstName: orderReq.CustomerFirstName,

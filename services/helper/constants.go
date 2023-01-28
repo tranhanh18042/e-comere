@@ -4,6 +4,13 @@ const (
 	MetricInvalidParams = "invalid_params"
 	MetricNoHealth = "no_health"
 	MetricQueryError = "query_error"
+	MetricMarshalReqError = "marshal_request_body_error"
+	MetricInitReqError = "init_request_body_error"
+	MetricPostReqError = "post_request_error"
+	MetricGetReqError = "get_request_error"
+	MetricNon200Error = "response_non200_error"
+	MetricReadBodyError = "read_response_body_error"
+	MetricUnmarshalBodyError = "unmarshal_response_body_error"
 )
 
 const (
