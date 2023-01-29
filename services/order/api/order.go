@@ -13,18 +13,20 @@ import (
 )
 
 type OrderRequest struct {
-	Status          int    `json:"status"`
-	CustomerId      int    `json:"customer_id"`
-	CustomerFirstName      string    `json:"customer_first_name"`
-	CustomerLastName      string    `json:"customer_last_name"`
-	CustomerPhone      string    `json:"customer_phone"`
-	CustomerEmail      string    `json:"customer_email"`
-	ItemId          int    `json:"item_id"`
-	ItemQuantity    int    `json:"item_quantity"`
-	Address         string `json:"address"`
-	ShipFee         int    `json:"ship_fee"`
-	TotalAmount     int    `json:"total_amount"`
-	Discount int    `json:"discount_amount"`
+	Status            int    `json:"status"`
+	CustomerId        int    `json:"customer_id"`
+	CustomerFirstName string `json:"customer_first_name"`
+	CustomerLastName  string `json:"customer_last_name"`
+	CustomerPhone     string `json:"customer_phone"`
+	CustomerEmail     string `json:"customer_email"`
+	ItemId            int    `json:"item_id"`
+	ItemName          string `json:"item_name"`
+	ItemQuantity      int    `json:"item_quantity"`
+	ItemAmount        int    `json:"item_amount"`
+	Address           string `json:"address"`
+	ShipFee           int    `json:"ship_fee"`
+	TotalAmount       int    `json:"total_amount"`
+	Discount          int    `json:"discount_amount"`
 }
 
 func CreateOrder() gin.HandlerFunc {
@@ -58,11 +60,11 @@ func CreateOrder() gin.HandlerFunc {
 			orderReq.CustomerEmail = customerInfo.Email
 		} else {
 			customerID, err := client.CreateCustomer(&model.Customer{
-				FirstName: orderReq.CustomerFirstName,
-				LastName: orderReq.CustomerLastName,
+				FirstName:   orderReq.CustomerFirstName,
+				LastName:    orderReq.CustomerLastName,
 				PhoneNumber: orderReq.CustomerPhone,
-				Address: orderReq.Address,
-				Email: orderReq.CustomerEmail,
+				Address:     orderReq.Address,
+				Email:       orderReq.CustomerEmail,
 			})
 			if err != nil {
 				logger.Debug(ctx, "cannot create customer", err)
@@ -71,22 +73,39 @@ func CreateOrder() gin.HandlerFunc {
 			}
 			orderReq.CustomerId = customerID
 		}
+		if orderReq.ItemId == 0 {
+			logger.Debug(ctx, "item does not exist")
+			ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
+			return
+		} else {
+			itemInfo, err := client.GetItemByID(orderReq.ItemId)
+			if err != nil {
+				logger.Debug(ctx, "item does not exist", err)
+				ctx.JSON(http.StatusBadRequest, helper.BadRequestResponse)
+				return
+			}
+			orderReq.Discount = 10
+			orderReq.ShipFee = 10
+			orderReq.ItemName = itemInfo.ItemName
+			orderReq.ItemAmount = itemInfo.UnitPrice
+			orderReq.TotalAmount = itemInfo.UnitPrice * orderReq.ItemQuantity
+
+		}
 
 		_, err := helper.DBExecWithMetrics(labels, orderDB,
-			"INSERT INTO `order`(`status`, customer_id, " +
-			"item_id, item_quantity, address, item_amount, "+
-			"ship_fee,total_amount, discount_amount) "+
-			"VALUES(?,?,?,?,?,?,?,?,?)",
+			"INSERT INTO `order`(`status`, customer_id, "+
+				"item_id, item_quantity, address, item_amount, "+
+				"ship_fee,total_amount, discount_amount) "+
+				"VALUES(?,?,?,?,?,?,?,?,?)",
 			orderReq.Status,
 			orderReq.CustomerId,
 			orderReq.ItemId,
 			orderReq.ItemQuantity,
 			orderReq.Address,
-			123, // orderReq.ItemAmount,
-			456, // orderReq.ShipFee,
-			789, // orderReq.TotalAmount,
-			0, // orderReq.DiscoountAmount)
-		)
+			orderReq.ItemAmount,
+			orderReq.ShipFee,
+			orderReq.TotalAmount,
+			orderReq.Discount)
 		if err != nil {
 			logger.Debug(ctx, "cannot create order", err)
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
