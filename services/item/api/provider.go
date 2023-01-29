@@ -83,7 +83,7 @@ func UpdateProvider() gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
-		ctx.JSON(http.StatusOK, providerReq)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: providerReq})
 	}
 }
 
