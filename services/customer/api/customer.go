@@ -68,13 +68,13 @@ func CreateCustomer() gin.HandlerFunc {
 		}
 
 		createdCustomer := model.Customer{
-			Id: int(customerID),
-			Username: customerReq.Username,
-			FirstName: customerReq.FirstName,
-			LastName: customerReq.LastName,
-			Address: customerReq.Address,
+			Id:          int(customerID),
+			Username:    customerReq.Username,
+			FirstName:   customerReq.FirstName,
+			LastName:    customerReq.LastName,
+			Address:     customerReq.Address,
 			PhoneNumber: customerReq.PhoneNumber,
-			Email: customerReq.Email,
+			Email:       customerReq.Email,
 		}
 		logger.Debug(ctx, "created customer", createdCustomer)
 		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: createdCustomer})
@@ -163,6 +163,6 @@ func UpdateCustomer() gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
-		ctx.JSON(200, customerUpdate)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: customerUpdate})
 	}
 }

@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "19824650-5bbe-4558-bd24-36f37bfb9556",
+		"_postman_id": "1e2edc9c-4e36-4f5d-b1f2-f1d6379474f5",
 		"name": "customer_service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "17698403"
+		"_exporter_id": "23008784"
 	},
 	"item": [
 		{
@@ -13,7 +13,12 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"status\":1,\n    \"username\":\"username\",\n    \"password\":\"password\",\n    \"first_name\":\"FirstName\",\n    \"last_name\":\"LastName\",\n    \"address\":\"Address\",\n    \"phone_number\":\"09090909090\",\n    \"email\":\"my_email@example.com\"\n}"
+					"raw": "{\n    \"status\":1,\n    \"username\":\"username\",\n    \"password\":\"password\",\n    \"first_name\":\"FirstName\",\n    \"last_name\":\"LastName\",\n    \"address\":\"Address\",\n    \"phone_number\":\"09090909090\",\n    \"email\":\"my_email@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
 					"raw": "http://localhost:8082/api/customer",

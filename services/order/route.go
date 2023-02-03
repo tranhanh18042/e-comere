@@ -18,5 +18,7 @@ func InitRoute(db *helper.SvcDB) *gin.Engine {
 
 	r.POST("/api/order", api.CreateOrder())
 	r.PUT("/api/order/:id", api.UpdateOrder())
+	r.GET("/api/order", api.GetListOrders())
+	r.GET("/api/order/:id", api.GetOrderByID())
 	return r
 }

@@ -95,7 +95,7 @@ func UpdateWarehouse() gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
-		ctx.JSON(http.StatusOK, warehouseReq)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: warehouseReq})
 	}
 }
 
@@ -127,6 +127,6 @@ func CreatWarehouse() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, warehouseReq)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: warehouseReq})
 	}
 }

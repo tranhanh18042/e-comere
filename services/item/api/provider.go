@@ -78,12 +78,17 @@ func UpdateProvider() gin.HandlerFunc {
 			DBName: itemDB.Name,
 			Target: "update-provider",
 		}
-		_, err := helper.DBExecWithMetrics(labels, itemDB, "UPDATE provider SET provider_name=?,phone_number=?,address=? WHERE id=?", ctx.Param("id"))
+		_, err := helper.DBExecWithMetrics(labels, itemDB, "UPDATE provider SET provider_name=?,phone_number=?,address=? WHERE id=?",
+			providerReq.ProviderName,
+			providerReq.PhoneNumber,
+			providerReq.Address,
+			ctx.Param("id"))
 		if err != nil {
+			logger.Debug(ctx, "cannot update provider", err)
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
-		ctx.JSON(http.StatusOK, providerReq)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: providerReq})
 	}
 }
 

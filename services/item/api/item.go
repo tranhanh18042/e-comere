@@ -137,6 +137,6 @@ func UpdateItem() gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, helper.InternalErrorResponse)
 			return
 		}
-		ctx.JSON(http.StatusOK, itemUpdate)
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{Payload: itemUpdate})
 	}
 }
