@@ -5,25 +5,32 @@
     "steps": [
         {
             "id": 1,
-            "name": "Create Order",
+            "name": "Create Order With New Customer",
             "url": "http://localhost:8081/api/order",
             "method": "POST",
-            "payload_file": "./payloads/create_order_payload.json"
+            "payload_file": "./payloads/create_order_with_new_customer_payload.json"
         },
         {
             "id": 2,
+            "name": "Create Order With Existing Customer",
+            "url": "http://localhost:8081/api/order",
+            "method": "POST",
+            "payload_file": "./payloads/create_order_with_existing_customer_payload.json"
+        },
+        {
+            "id": 3,
             "name": "Get Order By ID",
             "url": "http://localhost:8081/api/order/{{_randomInt}}",
             "method": "GET"
         },
         {
-            "id": 3,
+            "id": 4,
             "name": "Get List Orders",
             "url": "http://localhost:8081/api/order",
             "method": "GET"
         },
         {
-            "id": 4,
+            "id": 5,
             "name": "Update Order",
             "url": "http://localhost:8081/api/order/{{_randomInt}}",
             "method": "PUT",

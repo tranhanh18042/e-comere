@@ -98,7 +98,7 @@ func GetCustomerByID() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(200, helper.SuccessResponse{
+		ctx.JSON(http.StatusOK, helper.SuccessResponse{
 			Payload: customer,
 		})
 	}
