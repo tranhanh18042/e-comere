@@ -1,7 +1,7 @@
 {
-    "iteration_count": 30,
+    "iteration_count": 1000,
     "load_type": "waved",
-    "duration": 100,
+    "duration": 900,
     "steps": [
         {
             "id": 1,
