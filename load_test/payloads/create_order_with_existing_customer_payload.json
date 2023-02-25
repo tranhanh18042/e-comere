@@ -1,0 +1,8 @@
+{
+    "customer_id": 1,
+    "customer_phone":"0909900999",
+    "item_id":2,
+    "item_quantity":3,
+    "address":"customer address",
+    "customer_email":"my_email@example.com"
+}

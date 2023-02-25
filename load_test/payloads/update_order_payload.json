@@ -1,0 +1,11 @@
+{
+    "status":1,
+    "customer_id":8,
+    "item_id":1,
+    "item_quantity":1,
+    "address":"Ha Noi",
+    "item_amount":1,
+    "ship_fee":1,
+    "total_amount":1,
+    "discount_amount":1
+}

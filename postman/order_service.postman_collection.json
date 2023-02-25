@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "6963889d-4d19-4ad7-9f37-63dbf1a60c7d",
+		"name": "order_service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23008784"
+	},
+	"item": [
+		{
+			"name": "Create Order With Customer info",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer_first_name\":\"customer first name\",\n    \"customer_last_name\":\"customer last name\",\n    \"customer_phone\":\"0909900999\",\n    \"item_id\":2,\n    \"item_quantity\":3,\n    \"address\":\"customer address\",\n    \"customer_email\":\"my_email@example.com\"\n}\n\t\n\t\n\t",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/order",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Order",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\":1,\n    \"customer_id\":8,\n    \"item_id\":1,\n    \"item_quantity\":1,\n    \"address\":\"Ha Noi\",\n    \"item_amount\":1,\n    \"ship_fee\":1,\n    \"total_amount\":1,\n    \"discount_amount\":1\n}\n\t\n\t\n\t",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/order/8",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"order",
+						"8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get List Orders",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\":1,\n    \"customer_id\":1,\n    \"item_id\":1,\n    \"item_quantity\":1,\n    \"address\":1,\n    \"item_amount\":1,\n    \"ship_fee\":1,\n    \"total_amount\":1,\n    \"discount_amount\":1\n}\n\t\n\t\n\t",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/order",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order By ID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\":1,\n    \"customer_id\":1,\n    \"item_id\":1,\n    \"item_quantity\":1,\n    \"address\":1,\n    \"item_amount\":1,\n    \"ship_fee\":1,\n    \"total_amount\":1,\n    \"discount_amount\":1\n}\n\t\n\t\n\t",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/order/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"order",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

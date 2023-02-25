@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  svc_item:
+    build:
+      context: services
+      args:
+        SERVICE: svc_item
+    depends_on:
+      - db_ecom_item
+    ports:
+      - "8083:8080"
+  svc_order:
+    build:
+      context: services
+      args:
+        SERVICE: svc_order
+    depends_on:
+      - db_ecom_order
+    ports:
+      - "8081:8080"
+  svc_customer:
+    build:
+      context: services
+      args:
+        SERVICE: svc_customer
+    depends_on:
+      - db_ecom_customer
+    ports:
+      - "8082:8080"
+  db_ecom_item:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./sql/init/item:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - "3307:3306"
+  db_ecom_customer:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./sql/init/customer:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - "3308:3306"
+  db_ecom_order:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./sql/init/order:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - "3309:3306"
+  grafana:
+    image: grafana/grafana-oss:9.2.6
+    ports:
+      - "9981:3000"
+  prometheus:
+    image: prom/prometheus:v2.40.3
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  node-exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"

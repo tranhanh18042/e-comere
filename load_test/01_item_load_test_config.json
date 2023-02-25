@@ -1,0 +1,33 @@
+{
+    "iteration_count": 10,
+    "load_type": "waved",
+    "duration": 10,
+    "steps": [
+        {
+            "id": 1,
+            "name": "Create Item",
+            "url": "http://localhost:8083/api/item",
+            "method": "POST",
+            "payload_file": "./payloads/create_item_payload.json"
+        },
+        {
+            "id": 2,
+            "name": "Get Item By ID",
+            "url": "http://localhost:8083/api/item/{{_randomInt}}",
+            "method": "GET"
+        },
+        {
+            "id": 3,
+            "name": "Get List Items",
+            "url": "http://localhost:8083/api/item",
+            "method": "GET"
+        },
+        {
+            "id": 4,
+            "name": "Update item",
+            "url": "http://localhost:8083/api/item/{{_randomInt}}",
+            "method": "PUT",
+            "payload_file": "./payloads/create_item_payload.json"
+        }
+    ]
+}
